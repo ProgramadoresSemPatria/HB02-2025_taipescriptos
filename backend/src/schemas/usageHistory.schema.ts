@@ -107,3 +107,7 @@ export const usageReportSchema = z.object({
 export const usageHistoryParamsSchema = z.object({
   id: uuidSchema,
 })
+
+export const materialParamsSchema = z.object({
+  materialId: uuidSchema,
+})
