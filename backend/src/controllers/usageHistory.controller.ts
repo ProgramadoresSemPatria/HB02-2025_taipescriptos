@@ -201,6 +201,66 @@ export class UsageHistoryController {
       return this.handleError(error, reply)
     }
   }
+
+  // ===== ESTATÍSTICAS =====
+
+  async getUserUsageStats(request: AuthenticatedRequest, reply: FastifyReply) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Buscar estatísticas (últimos 30 dias por padrão)
+      const stats = await usageHistoryService.getUserUsageStats(
+        request.userId,
+        request.userId,
+      )
+
+      return reply.status(200).send({
+        success: true,
+        data: stats,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
+
+  async getUserTotalCredits(
+    request: AuthenticatedRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Buscar total de créditos
+      const totalCredits = await usageHistoryService.getUserTotalCreditsUsed(
+        request.userId,
+        request.userId,
+      )
+
+      return reply.status(200).send({
+        success: true,
+        data: {
+          userId: request.userId,
+          totalCreditsUsed: totalCredits,
+        },
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
 }
 
 // Instância única do controller (singleton)
