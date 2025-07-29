@@ -40,7 +40,91 @@ export class UnauthorizedAccessError extends UsageHistoryError {
 
 export class UsageHistoryService {
   // ===== OPERAÇÕES PRINCIPAIS =====
+  /**
+   * Registra o uso de um material por um usuário
+   * Esta é a operação principal que:
+   * 1. Valida se usuário e material existem
+   * 2. Verifica se usuário tem créditos suficientes
+   * 3. Cria registro de uso
+   * 4. Decrementa créditos do usuário
+   * Tudo em uma transação
+   */
+  async recordUsage(
+    userId: string,
+    materialId: string,
+    creditsUsed: number,
+  ): Promise<UsageHistoryWithRelations> {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Validar se usuário existe e tem créditos suficientes
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true, credits: true, name: true, isPremium: true },
+      })
 
+      if (!user) {
+        throw new ResourceNotFoundError('Usuário', userId)
+      }
+
+      if (user.credits < creditsUsed) {
+        throw new InsufficientCreditsError(creditsUsed, user.credits)
+      }
+
+      // 2. Validar se material existe
+      const material = await tx.studyMaterial.findUnique({
+        where: { id: materialId },
+        select: { id: true, summary: true, mode: true, language: true },
+      })
+
+      if (!material) {
+        throw new ResourceNotFoundError('Material de estudo', materialId)
+      }
+
+      // 3. Criar registro de uso
+      const usageRecord = await tx.usageHistory.create({
+        data: {
+          userId,
+          materialId,
+          creditsUsed,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              credits: true,
+              isPremium: true,
+            },
+          },
+          material: {
+            select: {
+              id: true,
+              summary: true,
+              language: true,
+              mode: true,
+            },
+          },
+        },
+      })
+
+      // 4. Decrementar créditos do usuário
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          credits: {
+            decrement: creditsUsed,
+          },
+        },
+      })
+
+      // Log da operação (opcional - para auditoria)
+      console.log(
+        `[USAGE] User ${user.name} (${userId}) used ${creditsUsed} credits on material ${materialId}`,
+      )
+
+      return usageRecord
+    })
+  }
 }
 
 // Instância única do service (singleton)
