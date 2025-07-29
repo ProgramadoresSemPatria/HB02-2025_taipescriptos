@@ -286,6 +286,114 @@ export class UsageHistoryService {
 
     return await usageHistoryRepository.getTotalCreditsByUser(userId)
   }
+
+  // ===== RELATÓRIOS =====
+
+  /**
+   * Gera relatório detalhado de uso para um período
+   */
+  async generateUsageReport(
+    userId: string,
+    requestingUserId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{
+    user: {
+      id: string
+      name: string
+      email: string
+    }
+    period: {
+      startDate: Date
+      endDate: Date
+    }
+    summary: {
+      totalCreditsUsed: number
+      totalMaterialsAccessed: number
+      averageCreditsPerMaterial: number
+    }
+    materials: Array<{
+      materialId: string
+      summary: string
+      mode: 'summary' | 'quiz' | 'flashcard' | 'review'
+      accessCount: number
+      totalCredits: number
+      lastAccessed: Date
+    }>
+    usageByMode: Array<{
+      mode: 'summary' | 'quiz' | 'flashcard' | 'review'
+      count: number
+      totalCredits: number
+    }>
+  }> {
+    // Verificar se o usuário pode acessar estes dados
+    if (userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    // Buscar dados do usuário
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true },
+    })
+
+    if (!user) {
+      throw new ResourceNotFoundError('Usuário', userId)
+    }
+
+    // Buscar estatísticas do período
+    const stats = await usageHistoryRepository.getUsageStatsInPeriod(
+      userId,
+      startDate,
+      endDate,
+    )
+
+    // Buscar detalhes dos materiais usados no período
+    const materialsUsage = await prisma.usageHistory.groupBy({
+      by: ['materialId'],
+      where: {
+        userId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      _count: { id: true },
+      _sum: { creditsUsed: true },
+      _max: { createdAt: true },
+    })
+
+    // Buscar informações completas dos materiais
+    const materialIds = materialsUsage.map((m) => m.materialId)
+    const materials = await prisma.studyMaterial.findMany({
+      where: { id: { in: materialIds } },
+      select: { id: true, summary: true, mode: true },
+    })
+
+    const materialsReport = materialsUsage.map((usage) => {
+      const material = materials.find((m) => m.id === usage.materialId)
+      return {
+        materialId: usage.materialId,
+        summary: material?.summary || '',
+        mode: material?.mode || ('summary' as const),
+        accessCount: usage._count.id,
+        totalCredits: usage._sum.creditsUsed || 0,
+        lastAccessed: usage._max.createdAt || new Date(),
+      }
+    })
+
+    return {
+      user,
+      period: { startDate, endDate },
+      summary: {
+        totalCreditsUsed: stats.totalCreditsUsed,
+        totalMaterialsAccessed: stats.totalMaterialsAccessed,
+        averageCreditsPerMaterial: stats.averageCreditsPerMaterial,
+      },
+      materials: materialsReport,
+      usageByMode: stats.usageByMode,
+    }
+  }
 }
 
 // Instância única do service (singleton)
