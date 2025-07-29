@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma'
+import { Prisma } from '@prisma/client'
 import type {
   CreateUsageHistoryData,
   UsageHistoryQuery,
@@ -78,7 +79,7 @@ export class UsageHistoryRepository {
     const skip = (page - 1) * limit
 
     // Construir filtros para o WHERE
-    const where: any = {}
+    const where: Prisma.UsageHistoryWhereInput = {}
 
     if (filters.userId) {
       where.userId = filters.userId
