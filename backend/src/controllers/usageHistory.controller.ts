@@ -373,5 +373,4 @@ export class UsageHistoryController {
   }
 }
 
-// Instância única do controller (singleton)
 export const usageHistoryController = new UsageHistoryController()
