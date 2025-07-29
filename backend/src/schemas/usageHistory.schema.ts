@@ -44,3 +44,23 @@ export const usageHistoryQuerySchema = z.object({
   page: z.number().int().positive().default(1),
 })
 
+// Schema para resposta da API
+export const usageHistoryResponseSchema = usageHistoryBaseSchema.extend({
+  user: z
+    .object({
+      id: uuidSchema,
+      name: z.string(),
+      email: z.email(),
+      credits: z.number().int(),
+      isPremium: z.boolean(),
+    })
+    .optional(),
+  material: z
+    .object({
+      id: uuidSchema,
+      summary: z.string(),
+      language: z.string(),
+      mode: z.enum(['summary', 'quiz', 'flashcard', 'review']),
+    })
+    .optional(),
+})
