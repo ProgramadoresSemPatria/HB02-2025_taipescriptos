@@ -167,6 +167,35 @@ export class UsageHistoryService {
 
     return await usageHistoryRepository.findMany(userFilters, options)
   }
+
+  /**
+   * Busca uso de um material específico por um usuário
+   */
+  async getUserMaterialUsage(
+    userId: string,
+    materialId: string,
+    requestingUserId: string,
+  ): Promise<UsageHistoryWithRelations[]> {
+    // Verificar se o usuário pode acessar estes dados
+    if (userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    // Validar se material existe
+    const material = await prisma.studyMaterial.findUnique({
+      where: { id: materialId },
+      select: { id: true },
+    })
+
+    if (!material) {
+      throw new ResourceNotFoundError('Material de estudo', materialId)
+    }
+
+    return await usageHistoryRepository.findByUserAndMaterial(
+      userId,
+      materialId,
+    )
+  }
 }
 
 // Instância única do service (singleton)
