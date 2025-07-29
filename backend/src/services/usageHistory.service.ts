@@ -141,6 +141,32 @@ export class UsageHistoryService {
 
     return usage
   }
+
+  /**
+   * Busca histórico de uso de um usuário
+   */
+  async getUserUsageHistory(
+    userId: string,
+    requestingUserId: string,
+    filters: Partial<UsageHistoryQuery> = {},
+    options: PaginationOptions = { page: 1, limit: 20 },
+  ): Promise<{
+    data: UsageHistoryWithRelations[]
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }> {
+    // Verificar se o usuário pode acessar estes dados
+    if (userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    // Garantir que estamos filtrando pelo usuário correto
+    const userFilters = { ...filters, userId }
+
+    return await usageHistoryRepository.findMany(userFilters, options)
+  }
 }
 
 // Instância única do service (singleton)
