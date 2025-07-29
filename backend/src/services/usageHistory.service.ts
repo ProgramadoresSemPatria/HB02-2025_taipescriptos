@@ -25,3 +25,9 @@ export class InsufficientCreditsError extends UsageHistoryError {
     )
   }
 }
+
+export class ResourceNotFoundError extends UsageHistoryError {
+  constructor(resource: string, id: string) {
+    super(`${resource} não encontrado: ${id}`, 'RESOURCE_NOT_FOUND')
+  }
+}
