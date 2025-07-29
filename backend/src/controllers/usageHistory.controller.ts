@@ -92,6 +92,115 @@ export class UsageHistoryController {
       return this.handleError(error, reply)
     }
   }
+
+  // ===== BUSCAR REGISTROS =====
+
+  async getUsageById(request: GetUsageByIdRequest, reply: FastifyReply) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Validar parâmetros
+      const { id } = usageHistoryParamsSchema.parse(request.params)
+
+      // Buscar registro
+      const usage = await usageHistoryService.getUsageById(id, request.userId)
+
+      return reply.status(200).send({
+        success: true,
+        data: usage,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
+
+  async getUserUsageHistory(
+    request: GetUsageHistoryRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Validar query parameters
+      const queryParams = request.query as GetUsageHistoryRequest['Querystring']
+      const query = usageHistoryQuerySchema.parse(queryParams)
+
+      // Buscar histórico do usuário
+      const result = await usageHistoryService.getUserUsageHistory(
+        request.userId,
+        request.userId,
+        {
+          materialId: query.materialId,
+          startDate: query.startDate,
+          endDate: query.endDate,
+        },
+        {
+          page: query.page,
+          limit: query.limit,
+        },
+      )
+
+      return reply.status(200).send({
+        success: true,
+        data: result.data,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages,
+        },
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
+
+  async getUserMaterialUsage(
+    request: GetMaterialUsageRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Validar parâmetros
+      const { materialId } = materialParamsSchema.parse(request.params)
+
+      // Buscar uso do material
+      const usage = await usageHistoryService.getUserMaterialUsage(
+        request.userId,
+        materialId,
+        request.userId,
+      )
+
+      return reply.status(200).send({
+        success: true,
+        data: usage,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
 }
 
 // Instância única do controller (singleton)
