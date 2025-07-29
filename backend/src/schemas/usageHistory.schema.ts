@@ -85,3 +85,20 @@ export const usageStatsSchema = z.object({
     }),
   ),
 })
+
+// Schema para relatório de uso por período
+export const usageReportSchema = z.object({
+  startDate: z.date(),
+  endDate: z.date(),
+  totalCreditsUsed: z.number().int(),
+  totalSessions: z.number().int(),
+  materials: z.array(
+    z.object({
+      materialId: uuidSchema,
+      summary: z.string(),
+      accessCount: z.number().int(),
+      totalCredits: z.number().int(),
+      lastAccessed: z.date(),
+    }),
+  ),
+})
