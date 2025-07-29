@@ -196,6 +196,66 @@ export class UsageHistoryService {
       materialId,
     )
   }
+
+  // ===== ESTATÍSTICAS =====
+
+  /**
+   * Estatísticas completas de uso de um usuário
+   */
+  async getUserUsageStats(
+    userId: string,
+    requestingUserId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<{
+    totalCreditsUsed: number
+    totalMaterialsAccessed: number
+    averageCreditsPerMaterial: number
+    usageByMode: Array<{
+      mode: 'summary' | 'quiz' | 'flashcard' | 'review'
+      count: number
+      totalCredits: number
+    }>
+    period?: {
+      startDate: Date
+      endDate: Date
+    }
+  }> {
+    // Verificar se o usuário pode acessar estes dados
+    if (userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    // Validar se usuário existe
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    })
+
+    if (!user) {
+      throw new ResourceNotFoundError('Usuário', userId)
+    }
+
+    // Se não forneceu datas, usar últimos 30 dias
+    const defaultEndDate = endDate || new Date()
+    const defaultStartDate =
+      startDate || new Date(defaultEndDate.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+    const stats = await usageHistoryRepository.getUsageStatsInPeriod(
+      userId,
+      defaultStartDate,
+      defaultEndDate,
+    )
+
+    return {
+      ...stats,
+      period: {
+        startDate: defaultStartDate,
+        endDate: defaultEndDate,
+      },
+    }
+  }
+
 }
 
 // Instância única do service (singleton)
