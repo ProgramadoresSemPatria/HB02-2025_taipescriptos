@@ -37,3 +37,11 @@ export class UnauthorizedAccessError extends UsageHistoryError {
     super('Acesso não autorizado a este recurso', 'UNAUTHORIZED_ACCESS')
   }
 }
+
+export class UsageHistoryService {
+  // ===== OPERAÇÕES PRINCIPAIS =====
+
+}
+
+// Instância única do service (singleton)
+export const usageHistoryService = new UsageHistoryService()
