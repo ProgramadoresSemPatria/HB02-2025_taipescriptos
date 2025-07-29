@@ -125,6 +125,28 @@ export class UsageHistoryService {
       return usageRecord
     })
   }
+
+  /**
+   * Busca um registro de uso por ID
+   * Verifica se o usuário tem permissão para ver este registro
+   */
+  async getUsageById(
+    id: string,
+    requestingUserId: string,
+  ): Promise<UsageHistoryWithRelations> {
+    const usage = await usageHistoryRepository.findById(id)
+
+    if (!usage) {
+      throw new ResourceNotFoundError('Registro de uso', id)
+    }
+
+    // Verificar se o usuário tem permissão para ver este registro
+    if (usage.userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    return usage
+  }
 }
 
 // Instância única do service (singleton)
