@@ -102,3 +102,8 @@ export const usageReportSchema = z.object({
     }),
   ),
 })
+
+// Schema para parâmetros de ID na URL
+export const usageHistoryParamsSchema = z.object({
+  id: uuidSchema,
+})
