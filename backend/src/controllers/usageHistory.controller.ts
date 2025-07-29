@@ -54,3 +54,45 @@ interface GenerateReportRequest extends AuthenticatedRequest {
     endDate: string
   }
 }
+export class UsageHistoryController {
+  // ===== CRIAR REGISTRO DE USO =====
+
+  async createUsage(request: CreateUsageRequest, reply: FastifyReply) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Validar dados de entrada
+      const body = request.body as CreateUsageRequest['Body']
+      const validatedData = createUsageHistorySchema.parse({
+        userId: request.userId,
+        materialId: body.materialId,
+        creditsUsed: body.creditsUsed,
+      })
+
+      // Registrar uso através do service
+      const usage = await usageHistoryService.recordUsage(
+        validatedData.userId,
+        validatedData.materialId,
+        validatedData.creditsUsed,
+      )
+
+      return reply.status(201).send({
+        success: true,
+        message: 'Uso registrado com sucesso',
+        data: usage,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
+}
+
+// Instância única do controller (singleton)
+export const usageHistoryController = new UsageHistoryController()
