@@ -261,6 +261,69 @@ export class UsageHistoryController {
       return this.handleError(error, reply)
     }
   }
+
+  // ===== RELATÓRIOS =====
+
+  async generateUsageReport(
+    request: GenerateReportRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      // Verificar se usuário está autenticado
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+      }
+
+      // Validar query parameters
+      const queryParams = request.query as GenerateReportRequest['Querystring']
+      if (!queryParams.startDate || !queryParams.endDate) {
+        return reply.status(400).send({
+          success: false,
+          message: 'startDate e endDate são obrigatórios',
+          code: 'MISSING_REQUIRED_PARAMS',
+        })
+      }
+
+      const startDate = new Date(queryParams.startDate)
+      const endDate = new Date(queryParams.endDate)
+
+      // Validar datas
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return reply.status(400).send({
+          success: false,
+          message: 'Formato de data inválido. Use YYYY-MM-DD',
+          code: 'INVALID_DATE_FORMAT',
+        })
+      }
+
+      if (startDate > endDate) {
+        return reply.status(400).send({
+          success: false,
+          message: 'Data de início deve ser anterior à data de fim',
+          code: 'INVALID_DATE_RANGE',
+        })
+      }
+
+      // Gerar relatório
+      const report = await usageHistoryService.generateUsageReport(
+        request.userId,
+        request.userId,
+        startDate,
+        endDate,
+      )
+
+      return reply.status(200).send({
+        success: true,
+        data: report,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
 }
 
 // Instância única do controller (singleton)
