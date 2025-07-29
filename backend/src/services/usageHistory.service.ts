@@ -116,12 +116,6 @@ export class UsageHistoryService {
           },
         },
       })
-
-      // Log da operação (opcional - para auditoria)
-      console.log(
-        `[USAGE] User ${user.name} (${userId}) used ${creditsUsed} credits on material ${materialId}`,
-      )
-
       return usageRecord
     })
   }
