@@ -256,6 +256,21 @@ export class UsageHistoryService {
     }
   }
 
+  /**
+   * Estatísticas de popularidade de materiais (admin/analytics)
+   */
+  async getMaterialPopularityStats(limit: number = 10): Promise<
+    Array<{
+      materialId: string
+      summary: string
+      mode: 'summary' | 'quiz' | 'flashcard' | 'review'
+      accessCount: number
+      totalCredits: number
+      uniqueUsers: number
+    }>
+  > {
+    return await usageHistoryRepository.getMaterialPopularityStats(limit)
+  }
 }
 
 // Instância única do service (singleton)
