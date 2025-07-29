@@ -324,6 +324,44 @@ export class UsageHistoryController {
       return this.handleError(error, reply)
     }
   }
+
+  // ===== TRATAMENTO DE ERROS =====
+
+  private handleError(error: unknown, reply: FastifyReply) {
+    console.error('[UsageHistoryController] Error:', error)
+
+    // Erros específicos do service
+    if (error instanceof InsufficientCreditsError) {
+      return reply.status(400).send({
+        success: false,
+        message: error.message,
+        code: error.code,
+      })
+    }
+
+    if (error instanceof ResourceNotFoundError) {
+      return reply.status(404).send({
+        success: false,
+        message: error.message,
+        code: error.code,
+      })
+    }
+
+    if (error instanceof UnauthorizedAccessError) {
+      return reply.status(403).send({
+        success: false,
+        message: error.message,
+        code: error.code,
+      })
+    }
+
+    // Erro interno do servidor
+    return reply.status(500).send({
+      success: false,
+      message: 'Erro interno do servidor',
+      code: 'INTERNAL_SERVER_ERROR',
+    })
+  }
 }
 
 // Instância única do controller (singleton)
