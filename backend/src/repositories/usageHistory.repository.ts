@@ -530,5 +530,4 @@ export class UsageHistoryRepository {
   }
 }
 
-// Instância única do repository (singleton)
 export const usageHistoryRepository = new UsageHistoryRepository()
