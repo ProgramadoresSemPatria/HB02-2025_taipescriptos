@@ -16,3 +16,12 @@ export class UsageHistoryError extends Error {
     this.name = 'UsageHistoryError'
   }
 }
+
+export class InsufficientCreditsError extends UsageHistoryError {
+  constructor(required: number, available: number) {
+    super(
+      `Créditos insuficientes. Necessário: ${required}, Disponível: ${available}`,
+      'INSUFFICIENT_CREDITS',
+    )
+  }
+}
