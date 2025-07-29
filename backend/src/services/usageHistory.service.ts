@@ -271,6 +271,21 @@ export class UsageHistoryService {
   > {
     return await usageHistoryRepository.getMaterialPopularityStats(limit)
   }
+
+  /**
+   * Total de créditos usados por um usuário
+   */
+  async getUserTotalCreditsUsed(
+    userId: string,
+    requestingUserId: string,
+  ): Promise<number> {
+    // Verificar se o usuário pode acessar estes dados
+    if (userId !== requestingUserId) {
+      throw new UnauthorizedAccessError()
+    }
+
+    return await usageHistoryRepository.getTotalCreditsByUser(userId)
+  }
 }
 
 // Instância única do service (singleton)
