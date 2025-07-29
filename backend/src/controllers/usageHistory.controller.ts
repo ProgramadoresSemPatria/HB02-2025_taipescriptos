@@ -362,6 +362,15 @@ export class UsageHistoryController {
       code: 'INTERNAL_SERVER_ERROR',
     })
   }
+  // ===== HEALTH CHECK =====
+
+  async healthCheck(request: FastifyRequest, reply: FastifyReply) {
+    return reply.status(200).send({
+      success: true,
+      message: 'UsageHistory module is healthy',
+      timestamp: new Date().toISOString(),
+    })
+  }
 }
 
 // Instância única do controller (singleton)
