@@ -14,3 +14,13 @@ const usageHistoryBaseSchema = z.object({
     .positive('Créditos devem ser um número positivo'),
   createdAt: z.date(),
 })
+
+// Schema para criar um novo registro de uso
+export const createUsageHistorySchema = z.object({
+  userId: uuidSchema,
+  materialId: uuidSchema,
+  creditsUsed: z
+    .number()
+    .int()
+    .positive('Créditos devem ser um número positivo'),
+})
