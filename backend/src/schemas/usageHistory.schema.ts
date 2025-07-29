@@ -24,3 +24,12 @@ export const createUsageHistorySchema = z.object({
     .int()
     .positive('Créditos devem ser um número positivo'),
 })
+
+// Schema para atualizar registro
+export const updateUsageHistorySchema = z.object({
+  creditsUsed: z
+    .number()
+    .int()
+    .positive('Créditos devem ser um número positivo')
+    .optional(),
+})
