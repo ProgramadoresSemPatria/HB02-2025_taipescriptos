@@ -111,3 +111,13 @@ export const usageHistoryParamsSchema = z.object({
 export const materialParamsSchema = z.object({
   materialId: uuidSchema,
 })
+
+// Tipos TypeScript derivados dos schemas
+export type CreateUsageHistoryData = z.infer<typeof createUsageHistorySchema>
+export type UpdateUsageHistoryData = z.infer<typeof updateUsageHistorySchema>
+export type UsageHistoryQuery = z.infer<typeof usageHistoryQuerySchema>
+export type UsageHistoryResponse = z.infer<typeof usageHistoryResponseSchema>
+export type UsageStats = z.infer<typeof usageStatsSchema>
+export type UsageReport = z.infer<typeof usageReportSchema>
+export type UsageHistoryParams = z.infer<typeof usageHistoryParamsSchema>
+export type MaterialParams = z.infer<typeof materialParamsSchema>
