@@ -64,3 +64,24 @@ export const usageHistoryResponseSchema = usageHistoryBaseSchema.extend({
     })
     .optional(),
 })
+
+// Schema para estatísticas de uso
+export const usageStatsSchema = z.object({
+  totalCreditsUsed: z.number().int(),
+  totalMaterialsAccessed: z.number().int(),
+  averageCreditsPerMaterial: z.number(),
+  usageByDay: z.array(
+    z.object({
+      date: z.string().date(),
+      creditsUsed: z.number().int(),
+      materialsAccessed: z.number().int(),
+    }),
+  ),
+  usageByMode: z.array(
+    z.object({
+      mode: z.enum(['summary', 'quiz', 'flashcard', 'review']),
+      count: z.number().int(),
+      totalCredits: z.number().int(),
+    }),
+  ),
+})
