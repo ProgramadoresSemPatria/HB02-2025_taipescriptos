@@ -1,6 +1,6 @@
 import fastify from 'fastify'
 import fastifyJwt from '@fastify/jwt'
-import { env } from './src/env/index'
+import { env } from './src/env'
 import fastifyCors from '@fastify/cors'
 import { ZodError } from 'zod'
 
