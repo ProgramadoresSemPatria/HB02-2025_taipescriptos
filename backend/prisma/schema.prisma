@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  credits      Int            @default(3)
+  isPremium    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+
+  uploads       FileUpload[]
+  usageHistory  UsageHistory[]
+}
+
+model FileUpload {
+  id           String         @id @default(uuid())
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  filename     String
+  contentText  String
+  type         FileType
+  createdAt    DateTime       @default(now())
+
+  studyMaterial StudyMaterial?
+}
+
+enum FileType {
+  pdf
+  docx
+  txt
+  raw
+}
+
+model StudyMaterial {
+id String @id @default(uuid())
+upload FileUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+uploadId String @unique
+summary String
+quizJson Json
+flashcardsJson Json
+language String
+mode StudyMode
+createdAt DateTime @default(now())
+
+usageHistory UsageHistory[]
+}
+
+enum StudyMode {
+  summary
+  quiz
+  flashcard
+  review
+}
+
+model UsageHistory {
+  id           String         @id @default(uuid())
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  material     StudyMaterial  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  materialId   String
+  creditsUsed  Int
+  createdAt    DateTime       @default(now())
+}
