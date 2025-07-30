@@ -112,6 +112,202 @@ export const materialParamsSchema = z.object({
   materialId: uuidSchema,
 })
 
+// ===== SCHEMAS PARA SWAGGER =====
+
+export const healthCheckSchema = {
+  tags: ['UsageHistory'],
+  description: 'Verificar se o módulo UsageHistory está funcionando',
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        timestamp: { type: 'string' },
+      },
+    },
+  },
+}
+
+export const createUsageHistorySchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Registrar o uso de um material de estudo',
+  body: {
+    type: 'object',
+    required: ['materialId', 'creditsUsed'],
+    properties: {
+      materialId: { type: 'string', format: 'uuid' },
+      creditsUsed: { type: 'number', minimum: 1 },
+    },
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: { type: 'object' },
+      },
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        code: { type: 'string' },
+      },
+    },
+  },
+}
+
+export const usageHistoryParamsSchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Buscar um registro específico de uso por ID',
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'object' },
+      },
+    },
+    404: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        code: { type: 'string' },
+      },
+    },
+  },
+}
+
+export const usageHistoryQuerySchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Listar histórico de uso do usuário com filtros e paginação',
+  querystring: {
+    type: 'object',
+    properties: {
+      materialId: { type: 'string', format: 'uuid' },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' },
+      page: { type: 'number', minimum: 1, default: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'array' },
+        pagination: { type: 'object' },
+      },
+    },
+  },
+}
+
+export const materialParamsSchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Listar histórico de uso de um material específico pelo usuário',
+  params: {
+    type: 'object',
+    required: ['materialId'],
+    properties: {
+      materialId: { type: 'string', format: 'uuid' },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'array' },
+      },
+    },
+  },
+}
+
+export const usageStatsSchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Obter estatísticas completas de uso do usuário (últimos 30 dias)',
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: {
+          type: 'object',
+          properties: {
+            totalCreditsUsed: { type: 'number' },
+            totalMaterialsAccessed: { type: 'number' },
+            averageCreditsPerMaterial: { type: 'number' },
+            usageByMode: { type: 'array' },
+            period: { type: 'object' },
+          },
+        },
+      },
+    },
+  },
+}
+
+export const userTotalCreditsSchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Obter total de créditos utilizados pelo usuário',
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: {
+          type: 'object',
+          properties: {
+            userId: { type: 'string' },
+            totalCreditsUsed: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
+
+export const usageReportSchemaSwagger = {
+  tags: ['UsageHistory'],
+  description: 'Gerar relatório detalhado de uso para um período específico',
+  querystring: {
+    type: 'object',
+    required: ['startDate', 'endDate'],
+    properties: {
+      startDate: { type: 'string', format: 'date' },
+      endDate: { type: 'string', format: 'date' },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'object' },
+      },
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        code: { type: 'string' },
+      },
+    },
+  },
+}
+
 // Tipos TypeScript derivados dos schemas
 export type CreateUsageHistoryData = z.infer<typeof createUsageHistorySchema>
 export type UpdateUsageHistoryData = z.infer<typeof updateUsageHistorySchema>
