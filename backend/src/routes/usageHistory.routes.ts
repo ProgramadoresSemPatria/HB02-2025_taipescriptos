@@ -19,7 +19,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
    */
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
     // Pular autenticação para health check
-    if (request.url === '/health') {
+    if (request.url === '/api/health') {
       return
     }
 
