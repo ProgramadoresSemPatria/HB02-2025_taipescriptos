@@ -3,12 +3,11 @@ import fastifyJwt from '@fastify/jwt'
 import { env } from './src/env'
 import fastifyCors from '@fastify/cors'
 import { ZodError } from 'zod'
-import { userRoutes } from './src/controllers/users/routes'
+import { usersRoutes } from './src/routes/user.routes'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 
 import { usageHistoryRoutes } from './src/routes/usageHistory.routes'
-
 
 export const app = fastify()
 
@@ -33,20 +32,6 @@ app.register(fastifySwagger, {
             : 'Development server',
       },
     ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
   },
 })
 
@@ -67,6 +52,8 @@ app.get('/', async () => {
     status: 'running',
   }
 })
+
+app.register(usersRoutes, { prefix: '/api/users' })
 app.register(usageHistoryRoutes, { prefix: '/api/usage-history' })
 
 app.register(fastifyJwt, {
@@ -77,8 +64,6 @@ app.register(fastifyCors, {
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 })
-
-app.register(userRoutes)
 
 app.setErrorHandler((error, _, reply) => {
   if (error instanceof ZodError) {
