@@ -58,7 +58,27 @@ export type UpdateUser = z.infer<typeof updateUserSchema>
 export const registerUserSchemaSwagger = {
   tags: ['User'],
   description: 'Registrar um novo usuário',
-  body: createUserSchema, // Usa o schema Zod para validação
+  body: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        description: 'Nome do usuário',
+      },
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'Email do usuário',
+      },
+      password: {
+        type: 'string',
+        minLength: 6,
+        description: 'Senha do usuário (mínimo 6 caracteres)',
+      },
+    },
+    required: ['name', 'email', 'password'],
+  },
   response: {
     201: {
       description: 'Usuário registrado com sucesso',
@@ -101,7 +121,22 @@ export const registerUserSchemaSwagger = {
 export const loginUserSchemaSwagger = {
   tags: ['User'],
   description: 'Login de usuário',
-  body: loginUserSchema, // Usa o schema Zod para validação
+  body: {
+    type: 'object',
+    properties: {
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'Email do usuário',
+      },
+      password: {
+        type: 'string',
+        minLength: 6,
+        description: 'Senha do usuário',
+      },
+    },
+    required: ['email', 'password'],
+  },
   response: {
     200: {
       description: 'Login bem-sucedido',
