@@ -96,3 +96,47 @@ export const registerUserSchemaSwagger = {
     },
   },
 }
+
+// Schema para login de usuário
+export const loginUserSchemaSwagger = {
+  tags: ['User'],
+  description: 'Login de usuário',
+  body: loginUserSchema, // Usa o schema Zod para validação
+  response: {
+    200: {
+      description: 'Login bem-sucedido',
+      type: 'object',
+      properties: {
+        token: { type: 'string', description: 'Token de autenticação' },
+        user: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'ID do usuário',
+            },
+            name: { type: 'string', description: 'Nome do usuário' },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Email do usuário',
+            },
+            credits: { type: 'integer', description: 'Créditos do usuário' },
+            isPremium: {
+              type: 'boolean',
+              description: 'Se o usuário é premium',
+            },
+          },
+        },
+      },
+    },
+    400: {
+      description: 'Erro de validação ou credenciais inválidas',
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Mensagem de erro' },
+      },
+    },
+  },
+}
