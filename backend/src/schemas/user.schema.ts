@@ -84,19 +84,35 @@ export const registerUserSchemaSwagger = {
       description: 'Usuário registrado com sucesso',
       type: 'object',
       properties: {
-        id: { type: 'string', format: 'uuid', description: 'ID do usuário' },
-        name: { type: 'string', description: 'Nome do usuário' },
-        email: {
+        message: {
           type: 'string',
-          format: 'email',
-          description: 'Email do usuário',
+          description: 'Mensagem de sucesso',
         },
-        credits: { type: 'integer', description: 'Créditos do usuário' },
-        isPremium: { type: 'boolean', description: 'Se o usuário é premium' },
-        createdAt: {
-          type: 'string',
-          format: 'date-time',
-          description: 'Data de criação do usuário',
+        user: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'ID do usuário',
+            },
+            name: { type: 'string', description: 'Nome do usuário' },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Email do usuário',
+            },
+            credits: { type: 'integer', description: 'Créditos do usuário' },
+            isPremium: {
+              type: 'boolean',
+              description: 'Se o usuário é premium',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data de criação do usuário',
+            },
+          },
         },
       },
     },
@@ -112,6 +128,21 @@ export const registerUserSchemaSwagger = {
             description: 'Detalhes do erro de validação',
           },
         },
+      },
+    },
+    409: {
+      description: 'Usuário já existe',
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Mensagem de erro' },
+        code: { type: 'string', description: 'Código do erro' },
+      },
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Mensagem de erro' },
       },
     },
   },
