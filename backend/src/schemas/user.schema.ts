@@ -51,3 +51,48 @@ export type User = z.infer<typeof userBaseSchema>
 export type CreateUser = z.infer<typeof createUserSchema>
 export type LoginUser = z.infer<typeof loginUserSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
+
+// ==== SCHEMAS PARA SWAGGER ====
+
+// Schema para registro de usuário
+export const registerUserSchemaSwagger = {
+  tags: ['User'],
+  description: 'Registrar um novo usuário',
+  body: createUserSchema, // Usa o schema Zod para validação
+  response: {
+    201: {
+      description: 'Usuário registrado com sucesso',
+      type: 'object',
+      properties: {
+        id: { type: 'string', format: 'uuid', description: 'ID do usuário' },
+        name: { type: 'string', description: 'Nome do usuário' },
+        email: {
+          type: 'string',
+          format: 'email',
+          description: 'Email do usuário',
+        },
+        credits: { type: 'integer', description: 'Créditos do usuário' },
+        isPremium: { type: 'boolean', description: 'Se o usuário é premium' },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Data de criação do usuário',
+        },
+      },
+    },
+    400: {
+      description: 'Erro de validação',
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Mensagem de erro' },
+        errors: {
+          type: 'object',
+          additionalProperties: {
+            type: 'string',
+            description: 'Detalhes do erro de validação',
+          },
+        },
+      },
+    },
+  },
+}
