@@ -29,3 +29,19 @@ export const loginUserSchema = z.object({
   email: z.email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 })
+
+// Schema para atualizar usuário
+export const updateUserSchema = z
+  .object({
+    name: z.string().min(1, 'Nome é obrigatório').optional(),
+    email: z.string().email('Email inválido').optional(),
+    credits: z
+      .number()
+      .int()
+      .nonnegative('Créditos não podem ser negativos')
+      .optional(),
+    isPremium: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Pelo menos um campo deve ser fornecido para atualização',
+  })
