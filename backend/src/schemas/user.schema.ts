@@ -45,3 +45,9 @@ export const updateUserSchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Pelo menos um campo deve ser fornecido para atualização',
   })
+
+// Tipos TypeScript derivados dos schemas
+export type User = z.infer<typeof userBaseSchema>
+export type CreateUser = z.infer<typeof createUserSchema>
+export type LoginUser = z.infer<typeof loginUserSchema>
+export type UpdateUser = z.infer<typeof updateUserSchema>
