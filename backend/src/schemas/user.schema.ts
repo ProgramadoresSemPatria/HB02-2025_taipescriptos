@@ -16,3 +16,10 @@ export const userBaseSchema = z.object({
   isPremium: z.boolean().default(false),
   createdAt: z.iso.datetime(),
 })
+
+// Schema para criar usuário (input)
+export const createUserSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  email: z.email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+})
