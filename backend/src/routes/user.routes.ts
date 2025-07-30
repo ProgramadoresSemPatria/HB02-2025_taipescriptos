@@ -128,7 +128,11 @@ export async function usersRoutes(fastify: FastifyInstance) {
    */
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
     // Rotas que não precisam de autenticação
-    const publicRoutes = ['/health', '/register', '/login']
+    const publicRoutes = [
+      '/api/users/health',
+      '/api/users/register',
+      '/api/users/login',
+    ]
 
     if (publicRoutes.includes(request.url)) {
       return
