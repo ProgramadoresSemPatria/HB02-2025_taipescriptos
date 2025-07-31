@@ -237,7 +237,8 @@ export const materialParamsSchemaSwagger = {
 
 export const usageStatsSchemaSwagger = {
   tags: ['UsageHistory'],
-  description: 'Obter estatísticas completas de uso do usuário (últimos 30 dias)',
+  description:
+    'Obter estatísticas completas de uso do usuário (últimos 30 dias)',
   response: {
     200: {
       type: 'object',
