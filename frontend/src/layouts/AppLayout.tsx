@@ -1,17 +1,22 @@
 import { Outlet } from 'react-router-dom'
-import { Sidebar } from '../components/Sidebar'
+import { AppSidebar } from '@/components/Sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { SiteHeader } from '@/components/SiteHeader'
 
 export function AppLayout() {
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <div className="flex-grow flex">
-        <aside className="lg:w-1/5 hidden lg:block">
-          <Sidebar />
-        </aside>
-        <main className="p-4 flex-grow min-w-0">
-          <Outlet />
-        </main>
+    <SidebarProvider>
+      <div className="h-screen flex flex-col bg-background">
+        <div className="flex-grow flex">
+          <aside>
+            <AppSidebar />
+          </aside>
+          <main className="p-4 flex-grow min-w-0">
+            <SiteHeader />
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   )
 }
