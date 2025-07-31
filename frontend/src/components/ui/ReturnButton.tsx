@@ -4,7 +4,7 @@ const ReturnButton = () => {
   return (
     <div>
       <ArrowLeft
-        className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-700"
+        className="h-6 w-6 cursor-pointer text-white hover:text-gray-300"
         onClick={() => window.location.href = "/"}
       />
     </div>
