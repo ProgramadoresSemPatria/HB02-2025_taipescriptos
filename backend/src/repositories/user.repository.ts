@@ -79,7 +79,7 @@ export class UserRepository {
   /**
    * Cria um novo usuário
    */
-  async create(data: UserCreateData): Promise<UserWithoutPassword> {
+  async create(data: CreateUser): Promise<UserWithoutPassword> {
     // Hash da senha
     const saltRounds = 12
     const passwordHash = await bcrypt.hash(data.password, saltRounds)
