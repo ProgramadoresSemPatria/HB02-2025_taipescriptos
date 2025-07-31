@@ -1,9 +1,8 @@
 import {
   userRepository,
   type UserWithoutPassword,
-  type UserCreateData,
 } from '../repositories/user.repository'
-import type { CreateUser, LoginUser, UpdateUser } from '../schemas/user.schema'
+import type { UpdateUser } from '../schemas/user.schema'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { env } from '../env'
@@ -118,12 +117,16 @@ export class UsersService {
       { expiresIn: '7d' },
     )
 
-    // Remover passwordHash do retorno
-    const { passwordHash, ...userWithoutPassword } = user
-
     return {
       token,
-      user: userWithoutPassword,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        credits: user.credits,
+        isPremium: user.isPremium,
+        createdAt: user.createdAt,
+      },
     }
   }
 
