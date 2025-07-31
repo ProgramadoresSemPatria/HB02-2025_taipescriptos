@@ -6,7 +6,9 @@
     "dev": "nodemon",
     "test": "npx vitest run",
     "test:watch": "npx vitest",
-    "build": "tsup src --out-dir build"
+    "build": "tsup src --out-dir build",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "keywords": [],
   "author": "",
