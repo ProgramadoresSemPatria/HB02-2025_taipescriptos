@@ -40,7 +40,9 @@ export class UserRepository {
   /**
    * Busca um usuário por email (incluindo password para autenticação)
    */
-  async findByEmail(email: string): Promise<(UserWithoutPassword & { passwordHash: string }) | null> {
+  async findByEmail(
+    email: string,
+  ): Promise<(UserWithoutPassword & { passwordHash: string }) | null> {
     return await prisma.user.findUnique({
       where: { email },
       select: {
@@ -58,7 +60,9 @@ export class UserRepository {
   /**
    * Busca um usuário por email (sem password)
    */
-  async findByEmailWithoutPassword(email: string): Promise<UserWithoutPassword | null> {
+  async findByEmailWithoutPassword(
+    email: string,
+  ): Promise<UserWithoutPassword | null> {
     return await prisma.user.findUnique({
       where: { email },
       select: {
@@ -154,7 +158,10 @@ export class UserRepository {
   /**
    * Atualiza os créditos de um usuário
    */
-  async updateCredits(id: string, credits: number): Promise<UserWithoutPassword> {
+  async updateCredits(
+    id: string,
+    credits: number,
+  ): Promise<UserWithoutPassword> {
     return await prisma.user.update({
       where: { id },
       data: { credits },
@@ -172,7 +179,10 @@ export class UserRepository {
   /**
    * Incrementa os créditos de um usuário
    */
-  async incrementCredits(id: string, amount: number): Promise<UserWithoutPassword> {
+  async incrementCredits(
+    id: string,
+    amount: number,
+  ): Promise<UserWithoutPassword> {
     return await prisma.user.update({
       where: { id },
       data: {
@@ -194,7 +204,10 @@ export class UserRepository {
   /**
    * Decrementa os créditos de um usuário
    */
-  async decrementCredits(id: string, amount: number): Promise<UserWithoutPassword> {
+  async decrementCredits(
+    id: string,
+    amount: number,
+  ): Promise<UserWithoutPassword> {
     return await prisma.user.update({
       where: { id },
       data: {
