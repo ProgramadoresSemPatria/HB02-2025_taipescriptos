@@ -1,4 +1,5 @@
 import { Brain } from 'lucide-react'
+import { Button } from './ui/button'
 
 const Header = () => {
   return (
@@ -12,19 +13,9 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-6">
-          <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#como-funciona"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Como funciona
-            </a>
-            <a
-              href="#recursos"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Recursos
-            </a>
+          <nav className="hidden md:flex items-center gap-4">
+            <Button>Login</Button>
+            <Button>Registro</Button>
           </nav>
         </div>
       </div>
