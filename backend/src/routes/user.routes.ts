@@ -8,6 +8,19 @@ import {
   updateUserSchemaSwagger,
 } from '../schemas/user.schema'
 
+// Extensão de tipos para JWT
+declare module 'fastify' {
+  interface FastifyRequest {
+    userId?: string
+  }
+}
+
+// Interface para JWT payload
+interface JWTUser {
+  sub: string
+  [key: string]: unknown
+}
+
 export async function usersRoutes(fastify: FastifyInstance) {
   // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
 
@@ -29,8 +42,7 @@ export async function usersRoutes(fastify: FastifyInstance) {
     // Verificar JWT e extrair userId
     try {
       await request.jwtVerify()
-      // Assumindo que o payload do JWT tem um campo 'sub' com o userId
-      ;(request as any).userId = (request as any).user?.sub
+      request.userId = (request.user as JWTUser)?.sub
     } catch (error) {
       throw new Error('Token de autenticação inválido')
     }
@@ -49,16 +61,34 @@ export async function usersRoutes(fastify: FastifyInstance) {
   // Registro de usuário
   fastify.post('/register', {
     schema: registerUserSchemaSwagger,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.register(request as any, reply)
+    handler: async (
+      request: FastifyRequest<{
+        Body: { name: string; email: string; password: string }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const registerRequest = request as FastifyRequest & {
+        Body: { name: string; email: string; password: string }
+        body: { name: string; email: string; password: string }
+      }
+      return usersController.register(registerRequest, reply)
     },
   })
 
   // Login
   fastify.post('/login', {
     schema: loginUserSchemaSwagger,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.login(request as any, reply)
+    handler: async (
+      request: FastifyRequest<{
+        Body: { email: string; password: string }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const loginRequest = request as FastifyRequest & {
+        Body: { email: string; password: string }
+        body: { email: string; password: string }
+      }
+      return usersController.login(loginRequest, reply)
     },
   })
 
@@ -90,23 +120,64 @@ export async function usersRoutes(fastify: FastifyInstance) {
       },
     },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.getProfile(request as any, reply)
+      const authenticatedRequest = request as FastifyRequest & {
+        userId?: string
+      }
+      return usersController.getProfile(authenticatedRequest, reply)
     },
   })
 
   // Buscar usuário por ID
   fastify.get('/:id', {
     schema: getUserByIdSchema,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.getUserById(request as any, reply)
+    handler: async (
+      request: FastifyRequest<{
+        Params: { id: string }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const getUserRequest = request as FastifyRequest & {
+        Params: { id: string }
+        params: { id: string }
+        userId?: string
+      }
+      return usersController.getUserById(getUserRequest, reply)
     },
   })
 
   // Atualizar usuário
   fastify.put('/:id', {
     schema: updateUserSchemaSwagger,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.updateUser(request as any, reply)
+    handler: async (
+      request: FastifyRequest<{
+        Params: { id: string }
+        Body: {
+          name?: string
+          email?: string
+          credits?: number
+          isPremium?: boolean
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const updateUserRequest = request as FastifyRequest & {
+        params: { id: string }
+        Body: {
+          name?: string
+          email?: string
+          credits?: number
+          isPremium?: boolean
+        }
+        body: {
+          name?: string
+          email?: string
+          credits?: number
+          isPremium?: boolean
+        }
+        Params: { id: string }
+        userId?: string
+      }
+      return usersController.updateUser(updateUserRequest, reply)
     },
   })
 
@@ -132,8 +203,18 @@ export async function usersRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return usersController.deleteUser(request as any, reply)
+    handler: async (
+      request: FastifyRequest<{
+        Params: { id: string }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const deleteUserRequest = request as FastifyRequest & {
+        Params: { id: string }
+        params: { id: string }
+        userId?: string
+      }
+      return usersController.deleteUser(deleteUserRequest, reply)
     },
   })
 }

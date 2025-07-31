@@ -11,6 +11,49 @@ import {
   usageReportSchemaSwagger,
 } from '../schemas/usageHistory.schema'
 
+// ===== INTERFACES PARA TIPOS DE REQUEST =====
+
+interface AuthenticatedRequest extends FastifyRequest {
+  userId?: string
+}
+
+interface CreateUsageRequest extends AuthenticatedRequest {
+  Body: {
+    materialId: string
+    creditsUsed: number
+  }
+}
+
+interface GetUsageByIdRequest extends AuthenticatedRequest {
+  Params: {
+    id: string
+  }
+}
+
+interface GetMaterialUsageRequest extends AuthenticatedRequest {
+  Params: {
+    materialId: string
+  }
+}
+
+interface GetUsageHistoryRequest extends AuthenticatedRequest {
+  Querystring: {
+    userId?: string
+    materialId?: string
+    startDate?: string
+    endDate?: string
+    limit?: number
+    page?: number
+  }
+}
+
+interface GenerateReportRequest extends AuthenticatedRequest {
+  Querystring: {
+    startDate: string
+    endDate: string
+  }
+}
+
 export async function usageHistoryRoutes(fastify: FastifyInstance) {
   // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
 
@@ -27,7 +70,8 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
     try {
       await request.jwtVerify()
       // Assumindo que o payload do JWT tem um campo 'sub' com o userId
-      ;(request as any).userId = (request as any).user?.sub
+      const authRequest = request as AuthenticatedRequest
+      authRequest.userId = (request.user as { sub?: string })?.sub
     } catch (error) {
       throw new Error('Token de autenticação inválido')
     }
@@ -47,7 +91,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/stats', {
     schema: usageStatsSchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithAuth = request as any
+      const requestWithAuth = request as AuthenticatedRequest
       return usageHistoryController.getUserUsageStats(requestWithAuth, reply)
     },
   })
@@ -56,7 +100,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/total-credits', {
     schema: userTotalCreditsSchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithAuth = request as any
+      const requestWithAuth = request as AuthenticatedRequest
       return usageHistoryController.getUserTotalCredits(requestWithAuth, reply)
     },
   })
@@ -65,7 +109,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/report', {
     schema: usageReportSchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithQuery = request as any
+      const requestWithQuery = request as GenerateReportRequest
       return usageHistoryController.generateUsageReport(requestWithQuery, reply)
     },
   })
@@ -74,7 +118,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/material/:materialId', {
     schema: materialParamsSchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithParams = request as any
+      const requestWithParams = request as GetMaterialUsageRequest
       return usageHistoryController.getUserMaterialUsage(
         requestWithParams,
         reply,
@@ -86,7 +130,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', {
     schema: usageHistoryParamsSchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithParams = request as any
+      const requestWithParams = request as GetUsageByIdRequest
       return usageHistoryController.getUsageById(requestWithParams, reply)
     },
   })
@@ -95,7 +139,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.post('/', {
     schema: createUsageHistorySchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithBody = request as any
+      const requestWithBody = request as CreateUsageRequest
       return usageHistoryController.createUsage(requestWithBody, reply)
     },
   })
@@ -104,7 +148,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   fastify.get('/', {
     schema: usageHistoryQuerySchemaSwagger,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestWithQuery = request as any
+      const requestWithQuery = request as GetUsageHistoryRequest
       return usageHistoryController.getUserUsageHistory(requestWithQuery, reply)
     },
   })
