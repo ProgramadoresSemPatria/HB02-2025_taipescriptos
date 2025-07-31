@@ -4,17 +4,7 @@ import ImageTest from '../assets/ImageTest.jpg'
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `url(${ImageTest})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.1,
-        }}
-      />
-
+    <section className="relative min-h-screen flex items-center justify-between overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/80 z-10" />
 
       <div className="container mx-auto px-4 py-20 z-20 grid lg:grid-cols-2 gap-12 items-center">
@@ -55,7 +45,7 @@ const HeroSection = () => {
           </div>
         </div>
 
-        <div className="relative max-w-xl">
+        <div className="relative">
           <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl">
             <img
               src={ImageTest}
