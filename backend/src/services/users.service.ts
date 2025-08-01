@@ -112,7 +112,7 @@ export class UsersService {
 
     // Gerar JWT token
     const token = jwt.sign(
-      { sub: user.id, email: user.email },
+      { sub: user.id, email: user.email, role: user.role },
       env.JWT_SECRET,
       { expiresIn: '7d' },
     )
@@ -125,6 +125,7 @@ export class UsersService {
         email: user.email,
         credits: user.credits,
         isPremium: user.isPremium,
+        role: user.role,
         createdAt: user.createdAt,
       },
     }
