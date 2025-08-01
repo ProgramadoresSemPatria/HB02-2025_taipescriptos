@@ -72,19 +72,10 @@ export class FileUploadController {
     reply: FastifyReply,
   ) {
     try {
-      if (!request.userId)
-        return reply.status(401).send({
-          success: false,
-          message: 'Token de autenticação necessário',
-          code: 'AUTHENTICATION_REQUIRED',
-        })
-
       const { id } = fileUploadParamsSchema.parse(request.params)
 
-      const upload = await fileUploadService.getFileUploadById(
-        id,
-        request.userId,
-      )
+      // Como esta é uma rota pública, usa o método público do serviço
+      const upload = await fileUploadService.getFileUploadByIdPublic(id)
 
       return reply.status(200).send({
         success: true,

@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // Schema Zod para validação dos parâmetros de rota (runtime)
 export const fileUploadParamsSchema = z.object({
-  id: z.string().uuid('ID deve ser um UUID válido'),
+  id: z.uuid('ID deve ser um UUID válido'),
 })
 
 // Schema Zod para validação do body na criação (exemplo simples)
@@ -36,6 +36,7 @@ export const fileUploadDefinitionSwagger = {
 export const createFileUploadSchemaSwagger = {
   tags: ['FileUpload'],
   description: 'Realizar upload de um arquivo de estudo',
+  security: [{ bearerAuth: [] }],
   consumes: ['application/json'],
   body: {
     type: 'object',
@@ -106,6 +107,7 @@ export const fileUploadParamsSchemaSwagger = {
 export const fileUploadListSchemaSwagger = {
   tags: ['FileUpload'],
   description: 'Listar uploads do usuário',
+  security: [{ bearerAuth: [] }],
   querystring: {
     type: 'object',
     properties: {
