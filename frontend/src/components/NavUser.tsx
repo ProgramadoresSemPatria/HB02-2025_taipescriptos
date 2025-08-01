@@ -74,13 +74,13 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <UserCircle />
-                Account
+                Conta
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
-              Log out
+              Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
