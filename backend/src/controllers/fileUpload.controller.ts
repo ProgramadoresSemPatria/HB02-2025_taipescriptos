@@ -11,6 +11,7 @@ import {
 
 interface AuthenticatedRequest extends FastifyRequest {
   userId?: string
+  userRole?: 'USER' | 'ADMIN'
 }
 
 interface CreateFileUploadRequest extends AuthenticatedRequest {
