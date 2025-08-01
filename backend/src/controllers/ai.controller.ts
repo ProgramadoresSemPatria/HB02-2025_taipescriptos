@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { aiService } from '../services/ai.service'
-import { sendMessageBodySchema, SendMessageBody } from '../schemas/ai.schema'
+import { sendMessageBodySchema } from '../schemas/ai.schema'
 
 // ===== INTERFACES DE REQUEST =====
 
@@ -48,7 +48,7 @@ class AIController {
       return reply.status(200).send(status)
     } catch (error) {
       console.error('Erro ao verificar status da IA:', error)
-      
+
       return reply.status(500).send({
         message: 'Erro ao verificar status da IA',
         error: error instanceof Error ? error.message : 'Erro desconhecido',
@@ -69,7 +69,7 @@ class AIController {
       })
     } catch (error) {
       console.error('Erro no health check da IA:', error)
-      
+
       return reply.status(500).send({
         message: 'AI service health check failed',
         error: error instanceof Error ? error.message : 'Erro desconhecido',

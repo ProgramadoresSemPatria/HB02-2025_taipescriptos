@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -6,9 +7,9 @@ async function createAdminUser() {
   try {
     // Verificar se o usuário já existe
     const email = 'admin@studybuddy.com'
-    
+
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     })
 
     if (existingUser) {
@@ -21,16 +22,15 @@ async function createAdminUser() {
           name: true,
           email: true,
           role: true,
-          createdAt: true
-        }
+          createdAt: true,
+        },
       })
-      
+
       console.log('✅ Usuário promovido para admin:', updatedUser)
     } else {
       // Se não existe, criar novo usuário admin
-      const bcrypt = require('bcryptjs')
       const passwordHash = await bcrypt.hash('admin123', 12)
-      
+
       const newUser = await prisma.user.create({
         data: {
           name: 'Admin User',
@@ -38,17 +38,17 @@ async function createAdminUser() {
           passwordHash,
           role: 'ADMIN',
           credits: 1000,
-          isPremium: true
+          isPremium: true,
         },
         select: {
           id: true,
           name: true,
           email: true,
           role: true,
-          createdAt: true
-        }
+          createdAt: true,
+        },
       })
-      
+
       console.log('✅ Usuário admin criado:', newUser)
       console.log('📧 Email: admin@studybuddy.com')
       console.log('🔑 Senha: admin123')

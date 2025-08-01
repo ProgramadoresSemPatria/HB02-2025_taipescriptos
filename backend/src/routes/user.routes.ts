@@ -226,7 +226,7 @@ export async function usersRoutes(fastify: FastifyInstance) {
   })
 
   // ===== ROTAS ADMINISTRATIVAS =====
-  
+
   // Promover usuário a admin (apenas para admins)
   fastify.patch('/:id/promote-admin', {
     schema: {

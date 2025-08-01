@@ -60,7 +60,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
   fastify.post('/chat', {
     schema: {
       ...sendMessageSchemaSwagger,
-      description: 'Iniciar conversa com a IA Google Gemma (alias para /message)',
+      description:
+        'Iniciar conversa com a IA Google Gemma (alias para /message)',
     },
     handler: async (
       request: FastifyRequest<{
@@ -99,7 +100,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
       const testRequest = {
         ...request,
         body: {
-          message: 'Olá! Este é um teste de conexão. Responda com uma saudação simples.',
+          message:
+            'Olá! Este é um teste de conexão. Responda com uma saudação simples.',
           temperature: 0.3,
         },
       } as FastifyRequest & {

@@ -79,9 +79,7 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
    */
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
     // Rotas que não precisam de autenticação
-    const publicRoutes = [
-      '/api/usage-history/health',
-    ]
+    const publicRoutes = ['/api/usage-history/health']
 
     if (publicRoutes.includes(request.url)) {
       return
