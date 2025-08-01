@@ -1,12 +1,30 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { aiService } from '../services/ai.service'
-import { sendMessageBodySchema } from '../schemas/ai.schema'
+import {
+  sendMessageBodySchema,
+  sendMultimodalBodySchema,
+} from '../schemas/ai.schema'
 
 // ===== INTERFACES DE REQUEST =====
 
 interface SendMessageRequest extends FastifyRequest {
   Body: { message: string; temperature?: number }
   body: { message: string; temperature?: number }
+}
+
+interface SendMultimodalRequest extends FastifyRequest {
+  Body: {
+    text: string
+    image?: string
+    pdfTextChunks?: string[]
+    temperature?: number
+  }
+  body: {
+    text: string
+    image?: string
+    pdfTextChunks?: string[]
+    temperature?: number
+  }
 }
 
 class AIController {
@@ -28,6 +46,35 @@ class AIController {
       if (error instanceof Error) {
         return reply.status(500).send({
           message: 'Erro ao processar mensagem',
+          error: error.message,
+        })
+      }
+
+      return reply.status(500).send({
+        message: 'Erro interno do servidor',
+        error: 'Erro desconhecido',
+      })
+    }
+  }
+
+  /**
+   * Envia conteúdo multimodal (texto + imagem + PDF chunks) para a IA
+   */
+  async sendMultimodal(request: SendMultimodalRequest, reply: FastifyReply) {
+    try {
+      // Valida os dados de entrada
+      const validatedData = sendMultimodalBodySchema.parse(request.body)
+
+      // Chama o serviço da IA para processamento multimodal
+      const aiResponse = await aiService.sendMultimodal(validatedData)
+
+      return reply.status(200).send(aiResponse)
+    } catch (error) {
+      console.error('Erro no controller de IA (multimodal):', error)
+
+      if (error instanceof Error) {
+        return reply.status(500).send({
+          message: 'Erro ao processar conteúdo multimodal',
           error: error.message,
         })
       }
