@@ -13,7 +13,7 @@ export function ThemeSelector() {
 
   return (
     <Select onValueChange={setTheme} defaultValue={theme}>
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full mb-2">
         <SelectValue placeholder="Select theme" />
       </SelectTrigger>
       <SelectContent>
