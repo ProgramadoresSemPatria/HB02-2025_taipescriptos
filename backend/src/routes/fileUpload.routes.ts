@@ -6,12 +6,29 @@ import {
   createFileUploadSchemaSwagger,
 } from '../schemas/fileUpload.schema'
 
+// Estendendo as tipagens do Fastify para incluir userId e userRole
+declare module 'fastify' {
+  interface FastifyRequest {
+    userId?: string
+    userRole?: 'USER' | 'ADMIN'
+  }
+}
+
+interface JWTUser {
+  sub?: string
+  email?: string
+  role?: 'USER' | 'ADMIN'
+  [key: string]: unknown
+}
+
 export async function fileUploadRoutes(fastify: FastifyInstance) {
   // Middleware de autenticação JWT apenas para rotas privadas
   const authMiddleware = async (request: FastifyRequest) => {
     try {
       await request.jwtVerify()
-      ;(request as any).userId = (request as any).user?.sub
+      const user = request.user as JWTUser
+      request.userId = user?.sub
+      request.userRole = user?.role
     } catch {
       throw new Error('Token de autenticação inválido')
     }
