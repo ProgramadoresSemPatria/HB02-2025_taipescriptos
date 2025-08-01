@@ -7,6 +7,7 @@ import { env } from './src/env'
 import { fileUploadRoutes } from './src/routes/fileUpload.routes'
 import { usageHistoryRoutes } from './src/routes/usageHistory.routes'
 import { usersRoutes } from './src/routes/user.routes'
+import { aiRoutes } from './src/routes/ai.routes'
 import { ZodError } from 'zod'
 import { fileUploadSchemaSwagger } from './src/schemas/fileUpload.schema'
 
@@ -71,6 +72,7 @@ app.register(fastifyCors, {
 app.register(usersRoutes, { prefix: '/api/users' })
 app.register(usageHistoryRoutes, { prefix: '/api/usage-history' })
 app.register(fileUploadRoutes, { prefix: '/api/uploads' })
+app.register(aiRoutes, { prefix: '/api/ai' })
 
 app.get('/', async () => {
   return {
