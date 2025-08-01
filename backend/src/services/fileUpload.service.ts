@@ -47,6 +47,13 @@ export class FileUploadService {
     return upload
   }
 
+  // Método público para buscar arquivo por ID (sem verificação de usuário)
+  async getFileUploadByIdPublic(fileId: string) {
+    const upload = await prisma.fileUpload.findUnique({ where: { id: fileId } })
+    if (!upload) throw new FileNotFoundError(fileId)
+    return upload
+  }
+
   async listUserUploads(
     userId: string,
     requestingUserId: string,
