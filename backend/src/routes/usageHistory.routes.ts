@@ -11,10 +11,27 @@ import {
   usageReportSchemaSwagger,
 } from '../schemas/usageHistory.schema'
 
+// Extensão de tipos para JWT
+declare module 'fastify' {
+  interface FastifyRequest {
+    userId?: string
+    userRole?: 'USER' | 'ADMIN'
+  }
+}
+
+// Interface para JWT payload
+interface JWTUser {
+  sub?: string
+  email?: string
+  role?: 'USER' | 'ADMIN'
+  [key: string]: unknown
+}
+
 // ===== INTERFACES PARA TIPOS DE REQUEST =====
 
 interface AuthenticatedRequest extends FastifyRequest {
   userId?: string
+  userRole?: 'USER' | 'ADMIN'
 }
 
 interface CreateUsageRequest extends AuthenticatedRequest {
@@ -58,20 +75,24 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
   // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
 
   /**
-   * Hook que aplica autenticação JWT em todas as rotas exceto health check
+   * Hook que aplica autenticação JWT em rotas que precisam
    */
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
-    // Pular autenticação para health check
-    if (request.url === '/api/health') {
+    // Rotas que não precisam de autenticação
+    const publicRoutes = [
+      '/api/usage-history/health',
+    ]
+
+    if (publicRoutes.includes(request.url)) {
       return
     }
 
-    // Verificar JWT e extrair userId
+    // Verificar JWT e extrair userId e role
     try {
       await request.jwtVerify()
-      // Assumindo que o payload do JWT tem um campo 'sub' com o userId
-      const authRequest = request as AuthenticatedRequest
-      authRequest.userId = (request.user as { sub?: string })?.sub
+      const user = request.user as JWTUser
+      request.userId = user?.sub
+      request.userRole = user?.role
     } catch (error) {
       throw new Error('Token de autenticação inválido')
     }
@@ -89,7 +110,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Estatísticas do usuário
   fastify.get('/stats', {
-    schema: usageStatsSchemaSwagger,
+    schema: {
+      ...usageStatsSchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithAuth = request as AuthenticatedRequest
       return usageHistoryController.getUserUsageStats(requestWithAuth, reply)
@@ -98,7 +122,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Total de créditos usados
   fastify.get('/total-credits', {
-    schema: userTotalCreditsSchemaSwagger,
+    schema: {
+      ...userTotalCreditsSchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithAuth = request as AuthenticatedRequest
       return usageHistoryController.getUserTotalCredits(requestWithAuth, reply)
@@ -107,7 +134,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Relatório detalhado
   fastify.get('/report', {
-    schema: usageReportSchemaSwagger,
+    schema: {
+      ...usageReportSchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithQuery = request as GenerateReportRequest
       return usageHistoryController.generateUsageReport(requestWithQuery, reply)
@@ -116,7 +146,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Uso de material específico
   fastify.get('/material/:materialId', {
-    schema: materialParamsSchemaSwagger,
+    schema: {
+      ...materialParamsSchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithParams = request as GetMaterialUsageRequest
       return usageHistoryController.getUserMaterialUsage(
@@ -128,7 +161,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Buscar registro por ID
   fastify.get('/:id', {
-    schema: usageHistoryParamsSchemaSwagger,
+    schema: {
+      ...usageHistoryParamsSchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithParams = request as GetUsageByIdRequest
       return usageHistoryController.getUsageById(requestWithParams, reply)
@@ -137,7 +173,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Registrar uso de material
   fastify.post('/', {
-    schema: createUsageHistorySchemaSwagger,
+    schema: {
+      ...createUsageHistorySchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithBody = request as CreateUsageRequest
       return usageHistoryController.createUsage(requestWithBody, reply)
@@ -146,7 +185,10 @@ export async function usageHistoryRoutes(fastify: FastifyInstance) {
 
   // Listar histórico do usuário
   fastify.get('/', {
-    schema: usageHistoryQuerySchemaSwagger,
+    schema: {
+      ...usageHistoryQuerySchemaSwagger,
+      security: [{ bearerAuth: [] }],
+    },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const requestWithQuery = request as GetUsageHistoryRequest
       return usageHistoryController.getUserUsageHistory(requestWithQuery, reply)
