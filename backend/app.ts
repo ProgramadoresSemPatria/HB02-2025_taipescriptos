@@ -8,8 +8,14 @@ import { fileUploadRoutes } from './src/routes/fileUpload.routes'
 import { usageHistoryRoutes } from './src/routes/usageHistory.routes'
 import { usersRoutes } from './src/routes/user.routes'
 import { ZodError } from 'zod'
+import { fileUploadSchemaSwagger } from './src/schemas/fileUpload.schema'
 
 export const app = fastify()
+
+app.addSchema({
+  $id: 'FileUpload',
+  ...fileUploadSchemaSwagger,
+})
 
 app.register(fastifySwagger, {
   openapi: {
