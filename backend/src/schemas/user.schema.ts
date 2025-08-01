@@ -3,6 +3,9 @@ import { z } from 'zod'
 // Schema para validar UUID
 const uuidSchema = z.string().uuid('ID deve ser um UUID válido')
 
+// Enum para roles de usuário
+export const UserRoleEnum = z.enum(['USER', 'ADMIN'])
+
 // Schema base do User (para resposta da API)
 export const userBaseSchema = z.object({
   id: uuidSchema,
@@ -14,6 +17,7 @@ export const userBaseSchema = z.object({
     .nonnegative('Créditos não podem ser negativos')
     .default(3),
   isPremium: z.boolean().default(false),
+  role: UserRoleEnum.default('USER'),
   createdAt: z.iso.datetime(),
 })
 
@@ -41,6 +45,7 @@ export const updateUserSchema = z
       .nonnegative('Créditos não podem ser negativos')
       .optional(),
     isPremium: z.boolean().optional(),
+    role: UserRoleEnum.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Pelo menos um campo deve ser fornecido para atualização',
@@ -228,6 +233,7 @@ export const healthCheckSchema = {
 export const getUserByIdSchema = {
   tags: ['User'],
   description: 'Buscar usuário por ID',
+  security: [{ bearerAuth: [] }],
   params: {
     type: 'object',
     properties: {
@@ -248,6 +254,7 @@ export const getUserByIdSchema = {
             email: { type: 'string', format: 'email' },
             credits: { type: 'integer' },
             isPremium: { type: 'boolean' },
+            role: { type: 'string', enum: ['USER', 'ADMIN'] },
             createdAt: { type: 'string', format: 'date-time' },
           },
         },
@@ -268,6 +275,7 @@ export const getUserByIdSchema = {
 export const updateUserSchemaSwagger = {
   tags: ['User'],
   description: 'Atualizar dados do usuário',
+  security: [{ bearerAuth: [] }],
   params: {
     type: 'object',
     properties: {
@@ -297,6 +305,11 @@ export const updateUserSchemaSwagger = {
         type: 'boolean',
         description: 'Se o usuário é premium',
       },
+      role: {
+        type: 'string',
+        enum: ['USER', 'ADMIN'],
+        description: 'Role do usuário',
+      },
     },
     additionalProperties: false,
   },
@@ -314,6 +327,7 @@ export const updateUserSchemaSwagger = {
             email: { type: 'string', format: 'email' },
             credits: { type: 'integer' },
             isPremium: { type: 'boolean' },
+            role: { type: 'string', enum: ['USER', 'ADMIN'] },
             createdAt: { type: 'string', format: 'date-time' },
           },
         },
