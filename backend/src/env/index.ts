@@ -6,6 +6,7 @@ const envSchema = z.object({
   DATABASE_CLIENT: z.enum(['pg', 'sqlite']),
   JWT_SECRET: z.string(),
   PORT: z.coerce.number().default(3333),
+  GOOGLE_API_KEY: z.string(),
 })
 
 const _env = envSchema.safeParse(process.env)

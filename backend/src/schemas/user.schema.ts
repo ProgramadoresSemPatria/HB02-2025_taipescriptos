@@ -221,8 +221,8 @@ export const healthCheckSchema = {
       description: 'Serviço funcionando',
       type: 'object',
       properties: {
-        status: { type: 'string', example: 'ok' },
-        message: { type: 'string', example: 'Users service is running' },
+        status: { type: 'string' },
+        message: { type: 'string' },
         timestamp: { type: 'string', format: 'date-time' },
       },
     },
