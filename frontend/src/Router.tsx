@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { AccountPage } from './pages/AccountPage'
+import UploadPage from './pages/UploadPage'
 
 export function Router() {
   return (
@@ -14,6 +15,7 @@ export function Router() {
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/upload" element={<UploadPage />} />
     </Routes>
   )
 }
