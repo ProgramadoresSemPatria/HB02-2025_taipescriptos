@@ -16,6 +16,7 @@ import {
 
 interface AuthenticatedRequest extends FastifyRequest {
   userId?: string
+  userRole?: 'USER' | 'ADMIN'
 }
 
 interface RegisterRequest extends FastifyRequest {
@@ -48,6 +49,7 @@ interface UpdateUserRequest extends AuthenticatedRequest {
     email?: string
     credits?: number
     isPremium?: boolean
+    role?: 'USER' | 'ADMIN'
   }
 }
 
@@ -126,10 +128,11 @@ export class UsersController {
     try {
       const { id } = request.params as { id: string }
       const requestingUserId = request.userId
+      const userRole = request.userRole
 
       // Verificar se o usuário está tentando acessar seus próprios dados
-      // ou se é um admin (implementar lógica de admin futuramente)
-      if (requestingUserId !== id) {
+      // ou se é um admin
+      if (requestingUserId !== id && userRole !== 'ADMIN') {
         throw new UnauthorizedError()
       }
 
@@ -198,9 +201,11 @@ export class UsersController {
     try {
       const { id } = request.params as { id: string }
       const requestingUserId = request.userId
+      const userRole = request.userRole
 
       // Verificar se o usuário está tentando atualizar seus próprios dados
-      if (requestingUserId !== id) {
+      // ou se é um admin
+      if (requestingUserId !== id && userRole !== 'ADMIN') {
         throw new UnauthorizedError()
       }
 
@@ -246,9 +251,11 @@ export class UsersController {
     try {
       const { id } = request.params as { id: string }
       const requestingUserId = request.userId
+      const userRole = request.userRole
 
       // Verificar se o usuário está tentando deletar sua própria conta
-      if (requestingUserId !== id) {
+      // ou se é um admin
+      if (requestingUserId !== id && userRole !== 'ADMIN') {
         throw new UnauthorizedError()
       }
 
@@ -273,6 +280,47 @@ export class UsersController {
       }
 
       console.error('Erro ao deletar usuário:', error)
+      return reply.code(500).send({
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  // ===== OPERAÇÕES ADMINISTRATIVAS =====
+
+  async promoteUserToAdmin(request: GetUserRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string }
+      const requestingUserRole = request.userRole
+
+      // Verificar se o usuário que está fazendo a requisição é admin
+      if (requestingUserRole !== 'ADMIN') {
+        throw new UnauthorizedError()
+      }
+
+      // Promover usuário para admin
+      const user = await usersService.updateUser(id, { role: 'ADMIN' })
+
+      return reply.code(200).send({
+        message: 'Usuário promovido a admin com sucesso',
+        user,
+      })
+    } catch (error) {
+      if (error instanceof UserNotFoundError) {
+        return reply.code(404).send({
+          message: error.message,
+          code: error.code,
+        })
+      }
+
+      if (error instanceof UnauthorizedError) {
+        return reply.code(403).send({
+          message: error.message,
+          code: error.code,
+        })
+      }
+
+      console.error('Erro ao promover usuário:', error)
       return reply.code(500).send({
         message: 'Erro interno do servidor',
       })

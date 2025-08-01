@@ -32,6 +32,16 @@ app.register(fastifySwagger, {
             : 'Development server',
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Token JWT para autenticação',
+        },
+      },
+    },
   },
 })
 
@@ -46,8 +56,10 @@ app.register(fastifySwaggerUi, {
 app.register(fastifyJwt, { secret: env.JWT_SECRET })
 
 app.register(fastifyCors, {
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
 })
 
 app.register(usersRoutes, { prefix: '/api/users' })

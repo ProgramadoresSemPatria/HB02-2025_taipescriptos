@@ -12,12 +12,15 @@ import {
 declare module 'fastify' {
   interface FastifyRequest {
     userId?: string
+    userRole?: 'USER' | 'ADMIN'
   }
 }
 
 // Interface para JWT payload
 interface JWTUser {
-  sub: string
+  sub?: string
+  email?: string
+  role?: 'USER' | 'ADMIN'
   [key: string]: unknown
 }
 
@@ -39,10 +42,12 @@ export async function usersRoutes(fastify: FastifyInstance) {
       return
     }
 
-    // Verificar JWT e extrair userId
+    // Verificar JWT e extrair userId e role
     try {
       await request.jwtVerify()
-      request.userId = (request.user as JWTUser)?.sub
+      const user = request.user as JWTUser
+      request.userId = user?.sub
+      request.userRole = user?.role
     } catch (error) {
       throw new Error('Token de autenticação inválido')
     }
@@ -99,6 +104,7 @@ export async function usersRoutes(fastify: FastifyInstance) {
     schema: {
       tags: ['User'],
       description: 'Obter perfil do usuário logado',
+      security: [{ bearerAuth: [] }],
       response: {
         200: {
           description: 'Perfil do usuário',
@@ -186,6 +192,7 @@ export async function usersRoutes(fastify: FastifyInstance) {
     schema: {
       tags: ['User'],
       description: 'Deletar usuário',
+      security: [{ bearerAuth: [] }],
       params: {
         type: 'object',
         properties: {
@@ -215,6 +222,67 @@ export async function usersRoutes(fastify: FastifyInstance) {
         userId?: string
       }
       return usersController.deleteUser(deleteUserRequest, reply)
+    },
+  })
+
+  // ===== ROTAS ADMINISTRATIVAS =====
+  
+  // Promover usuário a admin (apenas para admins)
+  fastify.patch('/:id/promote-admin', {
+    schema: {
+      tags: ['User'],
+      description: 'Promover usuário a admin (apenas para admins)',
+      security: [{ bearerAuth: [] }],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid', description: 'ID do usuário' },
+        },
+        required: ['id'],
+      },
+      response: {
+        200: {
+          description: 'Usuário promovido a admin com sucesso',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                name: { type: 'string' },
+                email: { type: 'string', format: 'email' },
+                credits: { type: 'integer' },
+                isPremium: { type: 'boolean' },
+                role: { type: 'string', enum: ['USER', 'ADMIN'] },
+                createdAt: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Acesso negado - apenas admins',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            code: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: async (
+      request: FastifyRequest<{
+        Params: { id: string }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const promoteUserRequest = request as FastifyRequest & {
+        Params: { id: string }
+        params: { id: string }
+        userId?: string
+        userRole?: 'USER' | 'ADMIN'
+      }
+      return usersController.promoteUserToAdmin(promoteUserRequest, reply)
     },
   })
 }

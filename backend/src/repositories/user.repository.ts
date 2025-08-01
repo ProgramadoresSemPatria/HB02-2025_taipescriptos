@@ -8,6 +8,7 @@ export interface UserWithoutPassword {
   email: string
   credits: number
   isPremium: boolean
+  role: 'USER' | 'ADMIN'
   createdAt: Date
 }
 
@@ -32,6 +33,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -51,6 +53,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
         passwordHash: true,
       },
@@ -71,6 +74,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -96,6 +100,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -114,6 +119,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -171,6 +177,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -196,6 +203,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
@@ -221,6 +229,7 @@ export class UserRepository {
         email: true,
         credits: true,
         isPremium: true,
+        role: true,
         createdAt: true,
       },
     })
