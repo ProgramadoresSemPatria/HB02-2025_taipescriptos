@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { aiController } from '../controllers/ai.controller'
 import {
   sendMessageSchemaSwagger,
+  sendMultimodalSchemaSwagger,
   aiStatusSchemaSwagger,
 } from '../schemas/ai.schema'
 
@@ -53,6 +54,38 @@ export async function aiRoutes(fastify: FastifyInstance) {
         body: { message: string; temperature?: number }
       }
       return aiController.sendMessage(messageRequest, reply)
+    },
+  })
+
+  // Enviar conteúdo multimodal para a IA (texto + imagem + PDF chunks)
+  fastify.post('/multimodal', {
+    schema: sendMultimodalSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          temperature?: number
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const multimodalRequest = request as FastifyRequest & {
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          temperature?: number
+        }
+        body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          temperature?: number
+        }
+      }
+      return aiController.sendMultimodal(multimodalRequest, reply)
     },
   })
 
