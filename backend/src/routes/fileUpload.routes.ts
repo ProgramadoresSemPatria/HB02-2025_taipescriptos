@@ -7,16 +7,15 @@ import {
 } from '../schemas/fileUpload.schema'
 
 export async function fileUploadRoutes(fastify: FastifyInstance) {
-  // Middleware de autenticação JWT para todas rotas exceto health
-  fastify.addHook('preHandler', async (request: FastifyRequest) => {
-    if (request.url === '/health') return
+  // Middleware de autenticação JWT apenas para rotas privadas
+  const authMiddleware = async (request: FastifyRequest) => {
     try {
       await request.jwtVerify()
       ;(request as any).userId = (request as any).user?.sub
     } catch {
       throw new Error('Token de autenticação inválido')
     }
-  })
+  }
 
   fastify.get('/health', {
     schema: {
@@ -37,19 +36,24 @@ export async function fileUploadRoutes(fastify: FastifyInstance) {
       fileUploadController.healthCheck(request, reply),
   })
 
+  // Rota privada - criar upload (requer autenticação)
   fastify.post('/', {
+    preHandler: authMiddleware,
     schema: createFileUploadSchemaSwagger,
     handler: (request: FastifyRequest, reply: FastifyReply) =>
       fileUploadController.createFileUpload(request as any, reply),
   })
 
+  // Rota pública - buscar arquivo por ID (sem autenticação para permitir compartilhamento)
   fastify.get('/:id', {
     schema: fileUploadParamsSchemaSwagger,
     handler: (request: FastifyRequest, reply: FastifyReply) =>
       fileUploadController.getFileUploadById(request as any, reply),
   })
 
+  // Rota privada - listar uploads do usuário (requer autenticação)
   fastify.get('/', {
+    preHandler: authMiddleware,
     schema: fileUploadListSchemaSwagger,
     handler: (request: FastifyRequest, reply: FastifyReply) =>
       fileUploadController.listUserUploads(request as any, reply),
