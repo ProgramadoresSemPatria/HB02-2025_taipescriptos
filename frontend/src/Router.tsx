@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { AccountPage } from './pages/AccountPage'
 import UploadPage from './pages/UploadPage'
+import NewUploadPage from './pages/NewUploadPage'
 
 export function Router() {
   return (
@@ -12,6 +13,7 @@ export function Router() {
       <Route path="/" element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/uploadpage" element={<NewUploadPage />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
