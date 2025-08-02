@@ -20,6 +20,56 @@ export interface AIResponse {
   inputMessage: string
 }
 
+// ===== INTERFACES PARA RESPOSTAS ESTRUTURADAS =====
+
+export interface QuizQuestion {
+  pergunta: string
+  opcoes: string[]
+  respostaCorreta: number
+  explicacao?: string
+}
+
+export interface QuizResponse {
+  titulo: string
+  descricao?: string
+  questoes: QuizQuestion[]
+  modelo: string
+  timestamp: string
+  fonte: string
+}
+
+export interface Flashcard {
+  frente: string
+  verso: string
+  categoria?: string
+  dificuldade?: 'facil' | 'medio' | 'dificil'
+}
+
+export interface FlashcardsResponse {
+  titulo: string
+  descricao?: string
+  flashcards: Flashcard[]
+  modelo: string
+  timestamp: string
+  fonte: string
+}
+
+export interface PontoPrincipal {
+  topico: string
+  descricao: string
+}
+
+export interface SumarioResponse {
+  titulo: string
+  resumoExecutivo: string
+  topicosChave: string[]
+  pontosPrincipais: PontoPrincipal[]
+  conclusao?: string
+  modelo: string
+  timestamp: string
+  fonte: string
+}
+
 export interface ApiError {
   message: string
   error?: string
@@ -105,6 +155,125 @@ export async function sendMessageToAI(
     }
 
     console.error('Erro na comunicação com a API:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+// ===== FUNÇÕES PARA GERAÇÃO ESTRUTURADA =====
+
+/**
+ * Gera quiz estruturado baseado em conteúdo multimodal
+ */
+export async function generateQuiz(data: {
+  text: string
+  image?: string
+  pdfTextChunks?: string[]
+  quantidadeQuestoes?: number
+  temperatura?: number
+}): Promise<QuizResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/ai/generate/quiz`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new ApiException(response.status, responseData)
+    }
+
+    return responseData as QuizResponse
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error
+    }
+
+    console.error('Erro na geração de quiz:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Gera flashcards estruturados baseado em conteúdo multimodal
+ */
+export async function generateFlashcards(data: {
+  text: string
+  image?: string
+  pdfTextChunks?: string[]
+  quantidadeFlashcards?: number
+  temperatura?: number
+}): Promise<FlashcardsResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/ai/generate/flashcards`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new ApiException(response.status, responseData)
+    }
+
+    return responseData as FlashcardsResponse
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error
+    }
+
+    console.error('Erro na geração de flashcards:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Gera sumário estruturado baseado em conteúdo multimodal
+ */
+export async function generateSumario(data: {
+  text: string
+  image?: string
+  pdfTextChunks?: string[]
+  detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+  temperatura?: number
+}): Promise<SumarioResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/ai/generate/sumario`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new ApiException(response.status, responseData)
+    }
+
+    return responseData as SumarioResponse
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error
+    }
+
+    console.error('Erro na geração de sumário:', error)
     throw new ApiException(500, {
       message: 'Erro de conexão com o servidor',
       error: error instanceof Error ? error.message : 'Erro desconhecido',
