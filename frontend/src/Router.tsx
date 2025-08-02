@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { AccountPage } from './pages/AccountPage'
+import Index from './pages/Index'
 
 export function Router() {
   return (
@@ -11,6 +12,7 @@ export function Router() {
       <Route path="/" element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/study" element={<Index />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
