@@ -38,7 +38,7 @@ const mockStudies = [
 
 export function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="bg-gradient-to-br from-background via-background to-muted/30">
       <header className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
