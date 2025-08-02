@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
+import { ThemeSelector } from './ThemeSelector'
 
 const data = {
   user: {
@@ -59,6 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
+      <ThemeSelector />
       <Separator />
       <SidebarFooter>
         <NavUser user={data.user} />
