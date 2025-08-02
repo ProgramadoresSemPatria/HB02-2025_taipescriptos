@@ -1,6 +1,11 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
+import { HumanMessage } from '@langchain/core/messages'
 import { env } from '../env'
-import { SendMessageBody, AIResponse } from '../schemas/ai.schema'
+import {
+  SendMessageBody,
+  SendMultimodalBody,
+  AIResponse,
+} from '../schemas/ai.schema'
 
 class AIService {
   private model: ChatGoogleGenerativeAI
@@ -55,6 +60,78 @@ class AIService {
       console.error('Erro ao comunicar com a IA:', error)
       throw new Error(
         `Erro na comunicação com a IA: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+      )
+    }
+  }
+
+  /**
+   * Envia conteúdo multimodal (texto + imagem + PDF chunks) para a IA
+   */
+  async sendMultimodal(data: SendMultimodalBody): Promise<AIResponse> {
+    try {
+      const { text, image, pdfTextChunks, temperature = 0.7 } = data
+
+      // Atualiza a temperatura do modelo
+      this.model.temperature = temperature
+
+      // Constrói o prompt multimodal
+      let fullPrompt = text
+
+      // Adiciona contexto de PDFs se fornecido
+      if (pdfTextChunks && pdfTextChunks.length > 0) {
+        fullPrompt += '\n\n📄 **Contexto do PDF:**\n'
+        pdfTextChunks.forEach((chunk, index) => {
+          fullPrompt += `\n**Chunk ${index + 1}:**\n${chunk}\n`
+        })
+        fullPrompt += '\n---\n'
+      }
+
+      // Cria a mensagem multimodal
+      const messageContent: any[] = [
+        {
+          type: 'text',
+          text: fullPrompt,
+        },
+      ]
+
+      // Adiciona imagem se fornecida
+      if (image) {
+        // Remove o prefixo data:image/type;base64, para obter apenas o base64
+        const base64Data = image.split(',')[1]
+        const mimeType = image.split(';')[0].split(':')[1]
+
+        if (base64Data && mimeType) {
+          messageContent.push({
+            type: 'image_url',
+            image_url: image, // LangChain Google GenAI aceita data URL diretamente
+          })
+        }
+      }
+
+      // Cria a mensagem Human com conteúdo multimodal
+      const humanMessage = new HumanMessage({
+        content: messageContent,
+      })
+
+      // Faz a chamada para a IA
+      const response = await this.model.invoke([humanMessage])
+
+      // Extrai o conteúdo da resposta
+      const aiResponse = response.content as string
+
+      // Determina o modelo usado
+      const modelName = this.getModelName()
+
+      return {
+        response: aiResponse,
+        model: modelName,
+        timestamp: new Date().toISOString(),
+        inputMessage: text,
+      }
+    } catch (error) {
+      console.error('Erro ao comunicar com a IA (multimodal):', error)
+      throw new Error(
+        `Erro na comunicação multimodal com a IA: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
       )
     }
   }
