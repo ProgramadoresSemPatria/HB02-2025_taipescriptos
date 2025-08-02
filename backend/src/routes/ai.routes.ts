@@ -4,6 +4,9 @@ import {
   sendMessageSchemaSwagger,
   sendMultimodalSchemaSwagger,
   aiStatusSchemaSwagger,
+  generateQuizSchemaSwagger,
+  generateFlashcardsSchemaSwagger,
+  generateSumarioSchemaSwagger,
 } from '../schemas/ai.schema'
 
 export async function aiRoutes(fastify: FastifyInstance) {
@@ -143,6 +146,65 @@ export async function aiRoutes(fastify: FastifyInstance) {
       }
 
       return aiController.sendMessage(testRequest, reply)
+    },
+  })
+
+  // ===== ROTAS PARA GERAÇÃO ESTRUTURADA =====
+
+  // Gerar quiz estruturado
+  fastify.post('/generate/quiz', {
+    schema: generateQuizSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          temperatura?: number
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      return aiController.generateQuiz(request, reply)
+    },
+  })
+
+  // Gerar flashcards estruturados
+  fastify.post('/generate/flashcards', {
+    schema: generateFlashcardsSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeFlashcards?: number
+          temperatura?: number
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      return aiController.generateFlashcards(request, reply)
+    },
+  })
+
+  // Gerar sumário estruturado
+  fastify.post('/generate/sumario', {
+    schema: generateSumarioSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      return aiController.generateSumario(request, reply)
     },
   })
 }
