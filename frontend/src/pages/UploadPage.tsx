@@ -7,14 +7,14 @@ import {
   processFile,
   type ProcessedFile,
 } from '@/lib/fileProcessing'
-import { sendMultimodalToAI, type AIResponse, ApiException } from '@/lib/api'
+import { generateAll, type AIResponse, ApiException } from '@/lib/api'
 
 const UploadPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
-  const [aiResponse, setAiResponse] = useState<AIResponse | null>(null)
+  const [aiResponse, setAiResponse] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [processedChunks, setProcessedChunks] = useState<string[] | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
@@ -65,23 +65,22 @@ const UploadPage = () => {
         setProcessedImage(processedFile.image)
       }
 
-      // Montar payload para a API
+      // Montar payload completo para o endpoint /api/ai/generate/all
       setProcessingStep('Enviando para IA...')
       const payload = {
         text: processedFile.text,
-        image: processedFile.image,
-        pdfTextChunks: processedFile.pdfTextChunks,
-        temperature: 0.7,
+        image: processedFile.image || '',
+        pdfTextChunks: processedFile.pdfTextChunks || [],
+        quantidadeQuestoes: 5, // ou outro valor padrão/configurável
+        quantidadeFlashcards: 5, // ou outro valor padrão/configurável
+        detalhamento: 'intermediario' as const, // ou 'intermediario', 'detalhado', conforme desejado
+        temperatura: 0.3,
       }
 
-      console.log('Payload enviado:', {
-        text: payload.text,
-        hasImage: !!payload.image,
-        pdfChunksCount: payload.pdfTextChunks?.length || 0,
-      })
+      console.log('Payload enviado:', payload)
 
-      // Enviar para a API
-      const response = await sendMultimodalToAI(payload)
+      // Enviar para o endpoint correto /api/ai/generate/all
+      const response = await generateAll(payload)
       setAiResponse(response)
       setProcessingStep('')
 

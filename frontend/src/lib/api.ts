@@ -102,6 +102,8 @@ export async function sendMultimodalToAI(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFjMTE4ZS04N2QxLTQ0NTktYjhkYS1hOGNkN2E0MmY4ZjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1NDI1MjEwMiwiZXhwIjoxNzU0ODU2OTAyfQ.mA7s9zNGJxzj_gTX92xr_IgBV7NnhBoPazoWtJe6BnE',
       },
       body: JSON.stringify(data),
     })
@@ -274,6 +276,54 @@ export async function generateSumario(data: {
     }
 
     console.error('Erro na geração de sumário:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Gera quiz, flashcards e sumário juntos e salva no banco
+ */
+export async function generateAll(data: {
+  text: string
+  image?: string
+  pdfTextChunks?: string[]
+  quantidadeQuestoes?: number
+  quantidadeFlashcards?: number
+  detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+  temperatura?: number
+}): Promise<{
+  quiz: QuizResponse
+  flashcards: FlashcardsResponse
+  sumario: SumarioResponse
+  material: any
+}> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/ai/generate/all`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFjMTE4ZS04N2QxLTQ0NTktYjhkYS1hOGNkN2E0MmY4ZjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1NDI1MjEwMiwiZXhwIjoxNzU0ODU2OTAyfQ.mA7s9zNGJxzj_gTX92xr_IgBV7NnhBoPazoWtJe6BnE',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      throw new ApiException(response.status, responseData)
+    }
+
+    return responseData
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw error
+    }
+
+    console.error('Erro na geração completa:', error)
     throw new ApiException(500, {
       message: 'Erro de conexão com o servidor',
       error: error instanceof Error ? error.message : 'Erro desconhecido',

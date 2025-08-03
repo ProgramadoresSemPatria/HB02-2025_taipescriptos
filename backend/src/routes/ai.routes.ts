@@ -7,6 +7,7 @@ import {
   generateQuizSchemaSwagger,
   generateFlashcardsSchemaSwagger,
   generateSumarioSchemaSwagger,
+  generateAllSchemaSwagger,
 } from '../schemas/ai.schema'
 
 // Extensão de tipos para JWT
@@ -33,10 +34,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
    */
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
     // Rotas que não precisam de autenticação
-    const publicRoutes = [
-      '/api/ai/health',
-      '/api/ai/status',
-    ]
+    const publicRoutes = ['/api/ai/health', '/api/ai/status']
 
     if (publicRoutes.includes(request.url)) {
       return
@@ -306,6 +304,47 @@ export async function aiRoutes(fastify: FastifyInstance) {
         userId?: string
       }
       return aiController.generateSumario(sumarioRequest, reply)
+    },
+  })
+
+  fastify.post('/generate/all', {
+    schema: generateAllSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          quantidadeFlashcards?: number
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const generateAllRequest = request as FastifyRequest & {
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          quantidadeFlashcards?: number
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+        body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          quantidadeFlashcards?: number
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+        userId?: string
+      }
+      return aiController.generateAll(generateAllRequest, reply)
     },
   })
 }
