@@ -158,44 +158,6 @@ export async function aiRoutes(fastify: FastifyInstance) {
     },
   })
 
-  // Rota de teste simples
-  fastify.get('/test', {
-    schema: {
-      tags: ['AI'],
-      description: 'Teste simples da IA com mensagem padrão',
-      security: [{ bearerAuth: [] }],
-      response: {
-        200: {
-          description: 'Resposta de teste da IA',
-          type: 'object',
-          properties: {
-            response: { type: 'string' },
-            model: { type: 'string' },
-            timestamp: { type: 'string', format: 'date-time' },
-            inputMessage: { type: 'string' },
-          },
-        },
-      },
-    },
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      // Cria um request simulado para teste
-      const testRequest = {
-        ...request,
-        body: {
-          message:
-            'Olá! Este é um teste de conexão. Responda com uma saudação simples.',
-          temperature: 0.3,
-        },
-      } as FastifyRequest & {
-        Body: { message: string; temperature?: number }
-        body: { message: string; temperature?: number }
-        userId?: string
-      }
-
-      return aiController.sendMessage(testRequest, reply)
-    },
-  })
-
   // ===== ROTAS PARA GERAÇÃO ESTRUTURADA =====
 
   // Gerar quiz estruturado
