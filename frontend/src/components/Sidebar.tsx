@@ -31,10 +31,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary">
-            <Brain className="h-6 w-6 text-primary-foreground" />
+          <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+            <Brain className="h-6 w-6 text-primary-foreground dark:text-foreground" />
           </div>
-          <span className="text-xl font-bold">Study Buddy</span>
+          <span className="text-xl font-bold text-primary dark:text-primary-glow">
+            Study Buddy
+          </span>
         </div>
       </SidebarHeader>
       <Separator />

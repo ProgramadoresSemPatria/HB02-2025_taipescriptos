@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground">
               <Brain className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold oklch(0 0 0)">Study Buddy</span>
