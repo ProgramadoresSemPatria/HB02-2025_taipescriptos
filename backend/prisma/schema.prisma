@@ -44,6 +44,7 @@ enum FileType {
   docx
   txt
   raw
+  image
 }
 
 model StudyMaterial {
