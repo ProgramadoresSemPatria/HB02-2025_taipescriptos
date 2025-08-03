@@ -10,8 +10,34 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { loginSchema } from '@/schemas/auth-schema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { Link } from 'react-router-dom'
+
+type LoginFormInput = z.infer<typeof loginSchema>
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LoginFormInput>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = (data: LoginFormInput) => {
+    console.log('Form submitted successfully:', data)
+    reset()
+  }
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -22,16 +48,28 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@exemplo.com"
-                  required
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field }) => (
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="email@exemplo.com"
+                      required
+                      {...field}
+                    />
+                  )}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
@@ -43,7 +81,18 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     Esqueceu sua senha?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <Input id="password" type="password" required {...field} />
+                  )}
+                />
+                {errors.password && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full cursor-pointer">
@@ -53,9 +102,9 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
             </div>
             <div className="mt-4 text-center text-sm">
               Não tem uma conta ainda?{' '}
-              <a href="/register" className="underline underline-offset-4">
+              <Link to="/register" className="underline underline-offset-4">
                 Cadastre-se
-              </a>
+              </Link>
             </div>
           </form>
         </CardContent>
