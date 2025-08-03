@@ -10,6 +10,7 @@ import {
   createUserSchema,
   loginUserSchema,
   updateUserSchema,
+  editProfileSchema,
 } from '../schemas/user.schema'
 
 // ===== INTERFACES DE REQUEST =====
@@ -50,6 +51,15 @@ interface UpdateUserRequest extends AuthenticatedRequest {
     credits?: number
     isPremium?: boolean
     role?: 'USER' | 'ADMIN'
+  }
+}
+
+interface EditProfileRequest extends AuthenticatedRequest {
+  Body: {
+    name?: string
+    currentPassword?: string
+    newPassword?: string
+    confirmPassword?: string
   }
 }
 
@@ -191,6 +201,52 @@ export class UsersController {
       }
 
       console.error('Erro ao buscar perfil:', error)
+      return reply.code(500).send({
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  async editProfile(request: EditProfileRequest, reply: FastifyReply) {
+    try {
+      const userId = request.userId
+      if (!userId) {
+        throw new UnauthorizedError()
+      }
+
+      // Validação dos dados
+      const editData = editProfileSchema.parse(request.body)
+
+      // Editar perfil
+      const user = await usersService.editProfile(userId, editData)
+
+      return reply.code(200).send({
+        message: 'Perfil atualizado com sucesso',
+        user,
+      })
+    } catch (error) {
+      if (error instanceof UserNotFoundError) {
+        return reply.code(404).send({
+          message: error.message,
+          code: error.code,
+        })
+      }
+
+      if (error instanceof InvalidCredentialsError) {
+        return reply.code(401).send({
+          message: 'Senha atual inválida',
+          code: error.code,
+        })
+      }
+
+      if (error instanceof UnauthorizedError) {
+        return reply.code(401).send({
+          message: error.message,
+          code: error.code,
+        })
+      }
+
+      console.error('Erro ao editar perfil:', error)
       return reply.code(500).send({
         message: 'Erro interno do servidor',
       })
