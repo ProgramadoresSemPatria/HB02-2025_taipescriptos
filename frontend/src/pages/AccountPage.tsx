@@ -12,25 +12,27 @@ export function AccountPage() {
           <div className="flex gap-3 items-center">
             <p>John Doe</p>
             <Button>
-              <PencilLine />
-              Editar
+              <PencilLine className="text-primary-foreground dark:text-foreground" />
+              <span className="text-primary-foreground dark:text-foreground">
+                Editar
+              </span>
             </Button>
           </div>
         </div>
         <Separator />
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">Seu email</h2>
-          <div className="flex gap-3 items-center">
-            <p>johndoe@example.com</p>
-          </div>
+          <span className="flex gap-3 items-center">johndoe@example.com</span>
         </div>
         <Separator />
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">Redefinir senha</h2>
           <div className="flex gap-3 items-center">
             <Button>
-              <Lock />
-              Redefinir senha
+              <Lock className="text-primary-foreground dark:text-foreground" />
+              <span className="text-primary-foreground dark:text-foreground">
+                Redefinir senha
+              </span>
             </Button>
           </div>
         </div>

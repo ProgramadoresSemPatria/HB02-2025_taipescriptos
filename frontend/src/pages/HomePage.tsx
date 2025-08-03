@@ -57,7 +57,7 @@ export function HomePage() {
             <Button
               variant="default"
               size="lg"
-              className="gap-2 shadow-lg"
+              className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground hover:scale-[1.03] transition-all cursor-pointer min-w-8 duration-200 ease-linear"
               onClick={() => navigate('/uploadpage')}
             >
               <Plus className="w-5 h-5" />
@@ -75,7 +75,7 @@ export function HomePage() {
               className="pl-10 bg-transparent border-border/60"
             />
           </div>
-          <p className="bg-foreground rounded-4xl p-2 text-sm text-muted font-medium">
+          <p className="text-foreground rounded-4xl py-2 px-4 text-sm font-medium underline-offset-2 underline">
             {mockStudies.length} estudos criados
           </p>
         </div>
