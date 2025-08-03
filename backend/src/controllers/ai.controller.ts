@@ -10,7 +10,6 @@ import {
   FlashcardsResponse,
   SumarioResponse,
 } from '../schemas/ai.schema'
-import { aiRepository } from '../repositories/ai.repository'
 
 // ===== INTERFACES DE REQUEST =====
 
@@ -250,86 +249,6 @@ class AIController {
       return reply.status(500).send({
         message: 'Erro interno do servidor',
         error: 'Erro desconhecido',
-      })
-    }
-  }
-
-  async generateAll(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const userId = (request as any).userId
-      console.log('[generateAll] userId:', userId)
-      if (!userId) {
-        console.warn('[generateAll] Usuário não autenticado')
-        return reply.status(401).send({ message: 'Usuário não autenticado' })
-      }
-
-      console.log('[generateAll] request.body:', request.body)
-
-      // Reutiliza os métodos existentes chamando o aiService diretamente
-      const {
-        text,
-        image,
-        pdfTextChunks,
-        quantidadeQuestoes,
-        quantidadeFlashcards,
-        detalhamento,
-        temperatura,
-      } = request.body as any
-
-      const [quiz, flashcards, sumario] = await Promise.all([
-        aiService.generateQuiz({
-          text,
-          image,
-          pdfTextChunks,
-          quantidadeQuestoes,
-          temperatura,
-        }),
-        aiService.generateFlashcards({
-          text,
-          image,
-          pdfTextChunks,
-          quantidadeFlashcards,
-          temperatura,
-        }),
-        aiService.generateSumario({
-          text,
-          image,
-          pdfTextChunks,
-          detalhamento,
-          temperatura,
-        }),
-      ])
-
-      console.log('[generateAll] Materiais gerados:', {
-        quiz,
-        flashcards,
-        sumario,
-      })
-
-      // Salva no banco usando o repositório
-      try {
-        const material = await aiRepository.create({
-          userId,
-          summary: sumario.resumoExecutivo || '',
-          quizJson: quiz,
-          flashcardsJson: flashcards,
-          language: 'pt',
-          mode: 'review',
-        })
-        console.log('[generateAll] Material salvo:', material)
-        return reply.status(200).send({ quiz, flashcards, sumario, material })
-      } catch (repoError) {
-        console.error('[generateAll] Erro ao salvar no banco:', repoError)
-        return reply.status(500).send({
-          message: 'Erro ao salvar materiais no banco',
-          error: repoError instanceof Error ? repoError.message : repoError,
-        })
-      }
-    } catch (error) {
-      console.error('Erro ao gerar e salvar materiais:', error)
-      return reply.status(500).send({
-        message: 'Erro ao gerar e salvar materiais',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
       })
     }
   }

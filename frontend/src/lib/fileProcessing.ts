@@ -46,6 +46,26 @@ export function detectFileType(file: File): FileTypeInfo {
   return { type: 'unsupported', mimeType, extension }
 }
 
+/**
+ * Mapeia o tipo detectado para o tipo do banco de dados
+ */
+export function mapFileTypeForDatabase(
+  detectedType: string,
+): 'pdf' | 'docx' | 'txt' | 'raw' | 'image' {
+  switch (detectedType) {
+    case 'image':
+      return 'image'
+    case 'pdf':
+      return 'pdf'
+    case 'docx':
+      return 'docx'
+    case 'text':
+      return 'txt' // Mapeia 'text' para 'txt'
+    default:
+      return 'raw'
+  }
+}
+
 export function resizeImageToBase64(
   file: File,
   maxSize = 512,
@@ -142,12 +162,13 @@ export async function processFile(
     case 'pdf':
       result.pdfTextChunks = await extractTextFromPDF(file)
       break
-    case 'text':
+    case 'text': {
       const textContent = await readTextFile(file)
       const textChunks = splitTextIntoChunks(textContent, 4000)
       result.pdfTextChunks =
         textChunks.length > 50 ? textChunks.slice(0, 50) : textChunks
       break
+    }
     case 'docx':
       throw new Error(
         'Processamento de arquivos .docx ainda não implementado. Use PDF ou texto simples.',

@@ -18,7 +18,7 @@ interface CreateFileUploadRequest extends AuthenticatedRequest {
   Body: {
     filename: string
     contentText: string
-    type: 'pdf' | 'docx' | 'txt' | 'raw'
+    type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
   }
 }
 
