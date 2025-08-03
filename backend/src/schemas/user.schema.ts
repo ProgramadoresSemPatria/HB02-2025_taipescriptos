@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // Schema para validar UUID
-const uuidSchema = z.string().uuid('ID deve ser um UUID válido')
+const uuidSchema = z.uuid('ID deve ser um UUID válido')
 
 // Enum para roles de usuário
 export const UserRoleEnum = z.enum(['USER', 'ADMIN'])
@@ -34,7 +34,7 @@ export const loginUserSchema = z.object({
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 })
 
-// Schema para atualizar usuário
+// Schema para atualizar usuário (admin)
 export const updateUserSchema = z
   .object({
     name: z.string().min(1, 'Nome é obrigatório').optional(),
@@ -51,11 +51,76 @@ export const updateUserSchema = z
     message: 'Pelo menos um campo deve ser fornecido para atualização',
   })
 
+// Schema para editar perfil do usuário logado
+export const editProfileSchema = z
+  .object({
+    name: z.string().min(1, 'Nome é obrigatório').optional(),
+    currentPassword: z
+      .string()
+      .min(6, 'Senha atual deve ter pelo menos 6 caracteres')
+      .optional(),
+    newPassword: z
+      .string()
+      .min(6, 'Nova senha deve ter pelo menos 6 caracteres')
+      .optional(),
+    confirmPassword: z
+      .string()
+      .min(6, 'Confirmação de senha deve ter pelo menos 6 caracteres')
+      .optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Pelo menos um campo deve ser fornecido para atualização',
+  })
+  .refine(
+    (data) => {
+      // Se está tentando alterar senha, deve fornecer senha atual
+      if (data.newPassword && !data.currentPassword) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Para alterar a senha, você deve fornecer a senha atual',
+      path: ['currentPassword'],
+    },
+  )
+  .refine(
+    (data) => {
+      // Se está tentando alterar senha, deve confirmar a nova senha
+      if (data.newPassword && !data.confirmPassword) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Para alterar a senha, você deve confirmar a nova senha',
+      path: ['confirmPassword'],
+    },
+  )
+  .refine(
+    (data) => {
+      // Nova senha e confirmação devem ser iguais
+      if (
+        data.newPassword &&
+        data.confirmPassword &&
+        data.newPassword !== data.confirmPassword
+      ) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Nova senha e confirmação devem ser iguais',
+      path: ['confirmPassword'],
+    },
+  )
+
 // Tipos TypeScript derivados dos schemas
 export type User = z.infer<typeof userBaseSchema>
 export type CreateUser = z.infer<typeof createUserSchema>
 export type LoginUser = z.infer<typeof loginUserSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
+export type EditProfile = z.infer<typeof editProfileSchema>
 
 // ==== SCHEMAS PARA SWAGGER ====
 
@@ -271,10 +336,10 @@ export const getUserByIdSchema = {
   },
 }
 
-// Schema para atualizar usuário
+// Schema para atualizar usuário (admin)
 export const updateUserSchemaSwagger = {
   tags: ['User'],
-  description: 'Atualizar dados do usuário',
+  description: 'Atualizar dados do usuário (admin)',
   security: [{ bearerAuth: [] }],
   params: {
     type: 'object',
@@ -331,6 +396,83 @@ export const updateUserSchemaSwagger = {
             createdAt: { type: 'string', format: 'date-time' },
           },
         },
+      },
+    },
+  },
+}
+
+// Schema para editar perfil do usuário logado
+export const editProfileSchemaSwagger = {
+  tags: ['User'],
+  description: 'Editar perfil do usuário logado (nome e/ou senha)',
+  security: [{ bearerAuth: [] }],
+  body: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        description: 'Novo nome do usuário',
+      },
+      currentPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'Senha atual (obrigatório para alterar senha)',
+      },
+      newPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'Nova senha',
+      },
+      confirmPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'Confirmação da nova senha',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      description: 'Perfil atualizado com sucesso',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            credits: { type: 'integer' },
+            isPremium: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
+    },
+    400: {
+      description: 'Erro de validação',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        issues: { type: 'object' },
+      },
+    },
+    401: {
+      description: 'Senha atual inválida',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'string' },
+      },
+    },
+    404: {
+      description: 'Usuário não encontrado',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'string' },
       },
     },
   },

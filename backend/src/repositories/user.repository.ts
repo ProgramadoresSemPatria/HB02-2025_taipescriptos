@@ -81,6 +81,27 @@ export class UserRepository {
   }
 
   /**
+   * Busca um usuário por ID (incluindo password para validação)
+   */
+  async findByIdWithPassword(
+    id: string,
+  ): Promise<(UserWithoutPassword & { passwordHash: string }) | null> {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        credits: true,
+        isPremium: true,
+        role: true,
+        createdAt: true,
+        passwordHash: true,
+      },
+    })
+  }
+
+  /**
    * Cria um novo usuário
    */
   async create(data: CreateUser): Promise<UserWithoutPassword> {
@@ -110,6 +131,28 @@ export class UserRepository {
    * Atualiza um usuário
    */
   async update(id: string, data: UpdateUser): Promise<UserWithoutPassword> {
+    return await prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        credits: true,
+        isPremium: true,
+        role: true,
+        createdAt: true,
+      },
+    })
+  }
+
+  /**
+   * Atualiza um usuário com dados que podem incluir password hash
+   */
+  async updateWithPasswordHash(
+    id: string,
+    data: Partial<{ name: string; passwordHash: string }>,
+  ): Promise<UserWithoutPassword> {
     return await prisma.user.update({
       where: { id },
       data,
