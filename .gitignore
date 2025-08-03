@@ -17,6 +17,7 @@ frontend/lerna-debug.log*
 frontend/dist
 frontend/dist-ssr
 frontend/*.local
+frontend/.env
 
 # Editor directories and files
 .vscode/*

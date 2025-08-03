@@ -3,6 +3,12 @@ import { aiService } from '../services/ai.service'
 import {
   sendMessageBodySchema,
   sendMultimodalBodySchema,
+  generateQuizBodySchema,
+  generateFlashcardsBodySchema,
+  generateSumarioBodySchema,
+  QuizResponse,
+  FlashcardsResponse,
+  SumarioResponse,
 } from '../schemas/ai.schema'
 
 // ===== INTERFACES DE REQUEST =====
@@ -120,6 +126,129 @@ class AIController {
       return reply.status(500).send({
         message: 'AI service health check failed',
         error: error instanceof Error ? error.message : 'Erro desconhecido',
+      })
+    }
+  }
+
+  // ===== MÉTODOS PARA GERAÇÃO ESTRUTURADA =====
+
+  /**
+   * Gera quiz estruturado baseado em conteúdo multimodal
+   */
+  async generateQuiz(
+    request: FastifyRequest<{
+      Body: {
+        text: string
+        image?: string
+        pdfTextChunks?: string[]
+        quantidadeQuestoes?: number
+        temperatura?: number
+      }
+    }>,
+    reply: FastifyReply,
+  ): Promise<QuizResponse> {
+    try {
+      // Valida os dados de entrada
+      const validatedData = generateQuizBodySchema.parse(request.body)
+
+      // Chama o serviço para gerar quiz
+      const quizResponse = await aiService.generateQuiz(validatedData)
+
+      return reply.status(200).send(quizResponse)
+    } catch (error) {
+      console.error('Erro no controller de geração de quiz:', error)
+
+      if (error instanceof Error) {
+        return reply.status(500).send({
+          message: 'Erro ao gerar quiz',
+          error: error.message,
+        })
+      }
+
+      return reply.status(500).send({
+        message: 'Erro interno do servidor',
+        error: 'Erro desconhecido',
+      })
+    }
+  }
+
+  /**
+   * Gera flashcards estruturados baseado em conteúdo multimodal
+   */
+  async generateFlashcards(
+    request: FastifyRequest<{
+      Body: {
+        text: string
+        image?: string
+        pdfTextChunks?: string[]
+        quantidadeFlashcards?: number
+        temperatura?: number
+      }
+    }>,
+    reply: FastifyReply,
+  ): Promise<FlashcardsResponse> {
+    try {
+      // Valida os dados de entrada
+      const validatedData = generateFlashcardsBodySchema.parse(request.body)
+
+      // Chama o serviço para gerar flashcards
+      const flashcardsResponse =
+        await aiService.generateFlashcards(validatedData)
+
+      return reply.status(200).send(flashcardsResponse)
+    } catch (error) {
+      console.error('Erro no controller de geração de flashcards:', error)
+
+      if (error instanceof Error) {
+        return reply.status(500).send({
+          message: 'Erro ao gerar flashcards',
+          error: error.message,
+        })
+      }
+
+      return reply.status(500).send({
+        message: 'Erro interno do servidor',
+        error: 'Erro desconhecido',
+      })
+    }
+  }
+
+  /**
+   * Gera sumário estruturado baseado em conteúdo multimodal
+   */
+  async generateSumario(
+    request: FastifyRequest<{
+      Body: {
+        text: string
+        image?: string
+        pdfTextChunks?: string[]
+        detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+        temperatura?: number
+      }
+    }>,
+    reply: FastifyReply,
+  ): Promise<SumarioResponse> {
+    try {
+      // Valida os dados de entrada
+      const validatedData = generateSumarioBodySchema.parse(request.body)
+
+      // Chama o serviço para gerar sumário
+      const sumarioResponse = await aiService.generateSumario(validatedData)
+
+      return reply.status(200).send(sumarioResponse)
+    } catch (error) {
+      console.error('Erro no controller de geração de sumário:', error)
+
+      if (error instanceof Error) {
+        return reply.status(500).send({
+          message: 'Erro ao gerar sumário',
+          error: error.message,
+        })
+      }
+
+      return reply.status(500).send({
+        message: 'Erro interno do servidor',
+        error: 'Erro desconhecido',
       })
     }
   }
