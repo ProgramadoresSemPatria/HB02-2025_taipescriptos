@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Link } from 'react-router-dom'
+import { Brain } from 'lucide-react'
 
 type RegisterFormInput = z.infer<typeof registerSchema>
 
@@ -43,10 +44,22 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Crie a sua conta</CardTitle>
-          <CardDescription>
-            Insira seus dados abaixo para criar sua conta
-          </CardDescription>
+          <div className="flex flex-col gap-8">
+            <div className="flex items-center justify-start gap-2">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+                <Brain className="h-6 w-6 text-primary-foreground dark:text-foreground" />
+              </div>
+              <span className="text-xl font-bold text-primary dark:text-primary-glow">
+                Study Buddy
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <CardTitle>Bem vindo ao Study Buddy!</CardTitle>
+              <CardDescription>
+                Insira seus dados abaixo para criar sua conta
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -109,7 +122,10 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full cursor-pointer">
+                <Button
+                  type="submit"
+                  className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
+                >
                   Criar Conta
                 </Button>
               </div>

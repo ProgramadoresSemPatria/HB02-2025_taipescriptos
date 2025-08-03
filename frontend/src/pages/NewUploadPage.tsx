@@ -24,6 +24,7 @@ import {
   type SumarioResponse,
   ApiException,
 } from '@/lib/api'
+import { motion } from 'framer-motion'
 
 type StudyType = 'quiz' | 'flashcards' | 'sumario'
 
@@ -155,226 +156,237 @@ const NewUploadPage = () => {
   ]
 
   return (
-    <div className="flex min-h-full justify-center p-4">
-      <div className="flex flex-col justify-center gap-12 p-6 max-w-2xl w-full">
-        <div>
-          <div className="text-center gap-2 flex flex-col">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Gere um novo estudo
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Anexe um arquivo (imagem, PDF ou documento) ou insira um texto
-              para gerar conteúdo educativo
-            </p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex min-h-full justify-center p-4">
+        <div className="flex flex-col justify-center gap-12 p-6 max-w-2xl w-full">
+          <div>
+            <div className="text-center gap-2 flex flex-col">
+              <h1 className="text-3xl font-bold tracking-tight">
+                Gere um novo estudo
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Anexe um arquivo (imagem, PDF ou documento) ou insira um texto
+                para gerar conteúdo educativo
+              </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {studyTypes.map(({ type, label, icon: Icon, description }) => (
-                <Card
-                  key={type}
-                  className="flex justify-center items-center flex-col h-auto p-4 gap-3"
-                >
-                  <Icon size={24} />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {studyTypes.map(({ type, label, icon: Icon, description }) => (
+                  <Card
+                    key={type}
+                    className="flex justify-center items-center flex-col h-auto p-4 gap-3"
+                  >
+                    <Icon size={24} />
 
-                  <div className="text-center">
-                    <div className="font-semibold text-sm sm:text-base">
-                      {label}
+                    <div className="text-center">
+                      <div className="font-semibold text-sm sm:text-base">
+                        {label}
+                      </div>
+                      <div className="text-sm sm:text-xs opacity-70">
+                        {description}
+                      </div>
                     </div>
-                    <div className="text-sm sm:text-xs opacity-70">
-                      {description}
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <div className="flex justify-center items-center flex-col gap-4">
-            <Dropzone
-              accept={{ 'image/*': [] }}
-              maxFiles={1}
-              maxSize={1024 * 1024 * 10}
-              minSize={1024}
-              onDrop={handleDrop}
-              onError={console.error}
-              src={selectedFiles}
-            >
-              <DropzoneEmptyState />
-              <DropzoneContent />
-            </Dropzone>
+          <div>
+            <div className="flex justify-center items-center flex-col gap-4">
+              <Dropzone
+                accept={{ 'image/*': [] }}
+                maxFiles={1}
+                maxSize={1024 * 1024 * 10}
+                minSize={1024}
+                onDrop={handleDrop}
+                onError={console.error}
+                src={selectedFiles}
+              >
+                <DropzoneEmptyState />
+                <DropzoneContent />
+              </Dropzone>
 
-            <p className="text-muted-foreground text-lg">Ou</p>
+              <p className="text-muted-foreground text-lg">Ou</p>
 
-            <AIInput onSubmit={handleSubmit}>
-              <AIInputTextarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Instruções adicionais (opcional) - Anexe um arquivo para começar..."
-                disabled={isLoading}
-              />
-              <AIInputToolbar className="flex items-end">
-                <AIInputTools></AIInputTools>
-                <AIInputSubmit disabled={!selectedFile} />
-              </AIInputToolbar>
-            </AIInput>
-          </div>
+              <AIInput onSubmit={handleSubmit}>
+                <AIInputTextarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Instruções adicionais (opcional) - Anexe um arquivo para começar..."
+                  disabled={isLoading}
+                />
+                <AIInputToolbar className="flex items-end">
+                  <AIInputTools></AIInputTools>
+                  <AIInputSubmit disabled={!selectedFile} />
+                </AIInputToolbar>
+              </AIInput>
+            </div>
 
-          {/* Status de processamento */}
-          {processingStep && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">
-                  ⏳ {processingStep}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+            {/* Status de processamento */}
+            {processingStep && (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">
+                    ⏳ {processingStep}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Mensagem de erro */}
-          {error && (
-            <Card className="border-red-200">
-              <CardContent className="p-4">
-                <p className="text-sm text-red-600">❌ {error}</p>
-              </CardContent>
-            </Card>
-          )}
+            {/* Mensagem de erro */}
+            {error && (
+              <Card className="border-red-200">
+                <CardContent className="p-4">
+                  <p className="text-sm text-red-600">❌ {error}</p>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Resultado */}
-          {result && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{result.titulo}</h2>
-                    {'descricao' in result && result.descricao && (
-                      <p className="text-muted-foreground">
-                        {result.descricao}
+            {/* Resultado */}
+            {result && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-xl font-bold">{result.titulo}</h2>
+                      {'descricao' in result && result.descricao && (
+                        <p className="text-muted-foreground">
+                          {result.descricao}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {result.modelo} •{' '}
+                        {new Date(result.timestamp).toLocaleString('pt-BR')} •
+                        Fonte: {result.fonte}
                       </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {result.modelo} •{' '}
-                      {new Date(result.timestamp).toLocaleString('pt-BR')} •
-                      Fonte: {result.fonte}
-                    </p>
-                  </div>
+                    </div>
 
-                  {/* Renderiza conteúdo baseado no tipo */}
-                  {'questoes' in result && (
-                    <div className="space-y-4">
-                      {result.questoes.map((questao, index) => (
-                        <div key={index} className="border rounded-lg p-4">
+                    {/* Renderiza conteúdo baseado no tipo */}
+                    {'questoes' in result && (
+                      <div className="space-y-4">
+                        {result.questoes.map((questao, index) => (
+                          <div key={index} className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-2">
+                              {index + 1}. {questao.pergunta}
+                            </h3>
+                            <div className="space-y-1 mb-2">
+                              {questao.opcoes.map((opcao, opcaoIndex) => (
+                                <div
+                                  key={opcaoIndex}
+                                  className={`p-2 rounded ${
+                                    opcaoIndex === questao.respostaCorreta
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-gray-50'
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + opcaoIndex)}.{' '}
+                                  {opcao}
+                                </div>
+                              ))}
+                            </div>
+                            {questao.explicacao && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                <strong>Explicação:</strong>{' '}
+                                {questao.explicacao}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {'flashcards' in result && (
+                      <div className="grid gap-4">
+                        {result.flashcards.map((flashcard, index) => (
+                          <div key={index} className="border rounded-lg">
+                            <div className="grid grid-cols-2 divide-x">
+                              <div className="p-4">
+                                <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                                  Frente
+                                </h4>
+                                <p>{flashcard.frente}</p>
+                              </div>
+                              <div className="p-4">
+                                <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                                  Verso
+                                </h4>
+                                <p>{flashcard.verso}</p>
+                              </div>
+                            </div>
+                            {flashcard.categoria && (
+                              <div className="px-4 pb-2">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {flashcard.categoria}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {'resumoExecutivo' in result && (
+                      <div className="space-y-4">
+                        <div>
                           <h3 className="font-semibold mb-2">
-                            {index + 1}. {questao.pergunta}
+                            Resumo Executivo
                           </h3>
-                          <div className="space-y-1 mb-2">
-                            {questao.opcoes.map((opcao, opcaoIndex) => (
-                              <div
-                                key={opcaoIndex}
-                                className={`p-2 rounded ${
-                                  opcaoIndex === questao.respostaCorreta
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-50'
-                                }`}
+                          <p className="text-sm">{result.resumoExecutivo}</p>
+                        </div>
+
+                        <div>
+                          <h3 className="font-semibold mb-2">Tópicos-Chave</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {result.topicosChave.map((topico, index) => (
+                              <span
+                                key={index}
+                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
                               >
-                                {String.fromCharCode(65 + opcaoIndex)}. {opcao}
+                                {topico}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="font-semibold mb-2">
+                            Pontos Principais
+                          </h3>
+                          <div className="space-y-3">
+                            {result.pontosPrincipais.map((ponto, index) => (
+                              <div
+                                key={index}
+                                className="border-l-4 border-blue-200 pl-4"
+                              >
+                                <h4 className="font-medium">{ponto.topico}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {ponto.descricao}
+                                </p>
                               </div>
                             ))}
                           </div>
-                          {questao.explicacao && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              <strong>Explicação:</strong> {questao.explicacao}
-                            </p>
-                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
 
-                  {'flashcards' in result && (
-                    <div className="grid gap-4">
-                      {result.flashcards.map((flashcard, index) => (
-                        <div key={index} className="border rounded-lg">
-                          <div className="grid grid-cols-2 divide-x">
-                            <div className="p-4">
-                              <h4 className="font-medium text-sm text-muted-foreground mb-1">
-                                Frente
-                              </h4>
-                              <p>{flashcard.frente}</p>
-                            </div>
-                            <div className="p-4">
-                              <h4 className="font-medium text-sm text-muted-foreground mb-1">
-                                Verso
-                              </h4>
-                              <p>{flashcard.verso}</p>
-                            </div>
+                        {result.conclusao && (
+                          <div>
+                            <h3 className="font-semibold mb-2">Conclusão</h3>
+                            <p className="text-sm">{result.conclusao}</p>
                           </div>
-                          {flashcard.categoria && (
-                            <div className="px-4 pb-2">
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                {flashcard.categoria}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {'resumoExecutivo' in result && (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold mb-2">Resumo Executivo</h3>
-                        <p className="text-sm">{result.resumoExecutivo}</p>
+                        )}
                       </div>
-
-                      <div>
-                        <h3 className="font-semibold mb-2">Tópicos-Chave</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {result.topicosChave.map((topico, index) => (
-                            <span
-                              key={index}
-                              className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-                            >
-                              {topico}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold mb-2">
-                          Pontos Principais
-                        </h3>
-                        <div className="space-y-3">
-                          {result.pontosPrincipais.map((ponto, index) => (
-                            <div
-                              key={index}
-                              className="border-l-4 border-blue-200 pl-4"
-                            >
-                              <h4 className="font-medium">{ponto.topico}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {ponto.descricao}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {result.conclusao && (
-                        <div>
-                          <h3 className="font-semibold mb-2">Conclusão</h3>
-                          <p className="text-sm">{result.conclusao}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 export default NewUploadPage
