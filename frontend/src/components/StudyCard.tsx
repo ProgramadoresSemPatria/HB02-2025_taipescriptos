@@ -16,7 +16,7 @@ export function StudyCard({ title, createdAt }: StudyCardProps) {
               <FileText className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-lg text-foreground transition-colors">
                 {title}
               </h3>
             </div>
@@ -32,7 +32,7 @@ export function StudyCard({ title, createdAt }: StudyCardProps) {
         </div>
 
         <div className="mt-4 flex gap-2">
-          <p className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 px-2 py-1">
+          <p className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none bg-primary/20 text-primary shadow-xs px-2 py-1">
             Resumo, Quiz e Flashcards
           </p>
         </div>
