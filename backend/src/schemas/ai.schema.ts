@@ -205,6 +205,7 @@ export type GenerateSumarioBody = z.infer<typeof generateSumarioBodySchema>
 export const sendMessageSchemaSwagger = {
   tags: ['AI'],
   description: 'Enviar mensagem para a IA Google Gemma',
+  security: [{ bearerAuth: [] }],
   body: {
     type: 'object',
     properties: {
@@ -273,6 +274,7 @@ export const sendMessageSchemaSwagger = {
 export const sendMultimodalSchemaSwagger = {
   tags: ['AI'],
   description: 'Enviar conteúdo multimodal (texto + imagem + PDF) para a IA',
+  security: [{ bearerAuth: [] }],
   body: {
     type: 'object',
     properties: {
@@ -385,6 +387,7 @@ export const aiStatusSchemaSwagger = {
 export const generateQuizSchemaSwagger = {
   tags: ['AI - Estudos'],
   description: 'Gerar quiz estruturado baseado em conteúdo multimodal',
+  security: [{ bearerAuth: [] }],
   body: {
     type: 'object',
     properties: {
@@ -457,6 +460,7 @@ export const generateQuizSchemaSwagger = {
 export const generateFlashcardsSchemaSwagger = {
   tags: ['AI - Estudos'],
   description: 'Gerar flashcards estruturados baseado em conteúdo multimodal',
+  security: [{ bearerAuth: [] }],
   body: {
     type: 'object',
     properties: {
@@ -532,6 +536,7 @@ export const generateFlashcardsSchemaSwagger = {
 export const generateSumarioSchemaSwagger = {
   tags: ['AI - Estudos'],
   description: 'Gerar sumário estruturado baseado em conteúdo multimodal',
+  security: [{ bearerAuth: [] }],
   body: {
     type: 'object',
     properties: {
