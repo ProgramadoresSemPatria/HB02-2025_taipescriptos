@@ -3,6 +3,23 @@
  */
 const API_BASE_URL = import.meta.env.VITE_API_URL
 
+function getAuthToken(): string | null {
+  return localStorage.getItem('token')
+}
+
+function createAuthHeaders(): Record<string, string> {
+  const token = getAuthToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  return headers
+}
+
 /**
  * Tipos para a API
  */
@@ -100,11 +117,7 @@ export async function sendMultimodalToAI(
   try {
     const response = await fetch(`${API_BASE_URL}/api/ai/multimodal`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFjMTE4ZS04N2QxLTQ0NTktYjhkYS1hOGNkN2E0MmY4ZjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1NDI1MjEwMiwiZXhwIjoxNzU0ODU2OTAyfQ.mA7s9zNGJxzj_gTX92xr_IgBV7NnhBoPazoWtJe6BnE',
-      },
+      headers: createAuthHeaders(),
       body: JSON.stringify(data),
     })
 
@@ -138,9 +151,7 @@ export async function sendMessageToAI(
   try {
     const response = await fetch(`${API_BASE_URL}/api/ai/message`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: createAuthHeaders(),
       body: JSON.stringify({ message, temperature }),
     })
 
@@ -179,9 +190,7 @@ export async function generateQuiz(data: {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ai/generate/quiz`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: createAuthHeaders(),
       body: JSON.stringify(data),
     })
 
@@ -218,9 +227,7 @@ export async function generateFlashcards(data: {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ai/generate/flashcards`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: createAuthHeaders(),
       body: JSON.stringify(data),
     })
 
@@ -257,9 +264,7 @@ export async function generateSumario(data: {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ai/generate/sumario`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: createAuthHeaders(),
       body: JSON.stringify(data),
     })
 
@@ -284,59 +289,13 @@ export async function generateSumario(data: {
 }
 
 /**
- * Gera quiz, flashcards e sumário juntos e salva no banco
- */
-export async function generateAll(data: {
-  text: string
-  image?: string
-  pdfTextChunks?: string[]
-  quantidadeQuestoes?: number
-  quantidadeFlashcards?: number
-  detalhamento?: 'basico' | 'intermediario' | 'detalhado'
-  temperatura?: number
-}): Promise<{
-  quiz: QuizResponse
-  flashcards: FlashcardsResponse
-  sumario: SumarioResponse
-  material: any
-}> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/generate/all`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YWFjMTE4ZS04N2QxLTQ0NTktYjhkYS1hOGNkN2E0MmY4ZjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1NDI1MjEwMiwiZXhwIjoxNzU0ODU2OTAyfQ.mA7s9zNGJxzj_gTX92xr_IgBV7NnhBoPazoWtJe6BnE',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
-    }
-
-    console.error('Erro na geração completa:', error)
-    throw new ApiException(500, {
-      message: 'Erro de conexão com o servidor',
-      error: error instanceof Error ? error.message : 'Erro desconhecido',
-    })
-  }
-}
-
-/**
  * Verifica o status da API
  */
 export async function checkAPIHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/health`)
+    const response = await fetch(`${API_BASE_URL}/api/ai/health`, {
+      headers: createAuthHeaders(),
+    })
     return response.ok
   } catch {
     return false
