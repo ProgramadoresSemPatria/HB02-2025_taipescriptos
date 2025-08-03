@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { AppLayout } from './layouts/AppLayout'
 import { HomePage } from './pages/HomePage'
+import { LandingPage } from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { AccountPage } from './pages/AccountPage'
@@ -11,8 +12,10 @@ import NewUploadPage from './pages/NewUploadPage'
 export function Router() {
   return (
     <Routes>
+      <Route path="/landing" element={<LandingPage />} />
       <Route path="/" element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/study" element={<Index />} />
         <Route path="/uploadpage" element={<NewUploadPage />} />
