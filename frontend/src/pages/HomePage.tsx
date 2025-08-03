@@ -2,6 +2,7 @@ import { StudyCard } from '@/components/StudyCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const mockStudies = [
   {
@@ -37,6 +38,8 @@ const mockStudies = [
 ]
 
 export function HomePage() {
+  const navigate = useNavigate()
+
   return (
     <div className="bg-gradient-to-br from-background via-background to-muted/30">
       <header className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
@@ -51,7 +54,12 @@ export function HomePage() {
               </p>
             </div>
 
-            <Button variant="default" size="lg" className="gap-2 shadow-lg">
+            <Button
+              variant="default"
+              size="lg"
+              className="gap-2 shadow-lg"
+              onClick={() => navigate('/uploadpage')}
+            >
               <Plus className="w-5 h-5" />
               Novo Estudo
             </Button>
