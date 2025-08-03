@@ -9,8 +9,51 @@ import {
   generateSumarioSchemaSwagger,
 } from '../schemas/ai.schema'
 
+// Extensão de tipos para JWT
+declare module 'fastify' {
+  interface FastifyRequest {
+    userId?: string
+    userRole?: 'USER' | 'ADMIN'
+  }
+}
+
+// Interface para JWT payload
+interface JWTUser {
+  sub?: string
+  email?: string
+  role?: 'USER' | 'ADMIN'
+  [key: string]: unknown
+}
+
 export async function aiRoutes(fastify: FastifyInstance) {
-  // ===== ROTAS PÚBLICAS (SEM AUTENTICAÇÃO) =====
+  // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
+
+  /**
+   * Hook que aplica autenticação JWT em rotas que precisam
+   */
+  fastify.addHook('preHandler', async (request: FastifyRequest) => {
+    // Rotas que não precisam de autenticação
+    const publicRoutes = [
+      '/api/ai/health',
+      '/api/ai/status',
+    ]
+
+    if (publicRoutes.includes(request.url)) {
+      return
+    }
+
+    // Verificar JWT e extrair userId e role
+    try {
+      await request.jwtVerify()
+      const user = request.user as JWTUser
+      request.userId = user?.sub
+      request.userRole = user?.role
+    } catch (error) {
+      throw new Error('Token de autenticação inválido')
+    }
+  })
+
+  // ===== ROTAS PÚBLICAS =====
 
   // Health check da IA
   fastify.get('/health', {
@@ -43,6 +86,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
     },
   })
 
+  // ===== ROTAS AUTENTICADAS =====
+
   // Enviar mensagem para a IA
   fastify.post('/message', {
     schema: sendMessageSchemaSwagger,
@@ -55,6 +100,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
       const messageRequest = request as FastifyRequest & {
         Body: { message: string; temperature?: number }
         body: { message: string; temperature?: number }
+        userId?: string
       }
       return aiController.sendMessage(messageRequest, reply)
     },
@@ -87,6 +133,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
           pdfTextChunks?: string[]
           temperature?: number
         }
+        userId?: string
       }
       return aiController.sendMultimodal(multimodalRequest, reply)
     },
@@ -108,6 +155,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
       const chatRequest = request as FastifyRequest & {
         Body: { message: string; temperature?: number }
         body: { message: string; temperature?: number }
+        userId?: string
       }
       return aiController.sendMessage(chatRequest, reply)
     },
@@ -118,6 +166,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
     schema: {
       tags: ['AI'],
       description: 'Teste simples da IA com mensagem padrão',
+      security: [{ bearerAuth: [] }],
       response: {
         200: {
           description: 'Resposta de teste da IA',
@@ -143,6 +192,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
       } as FastifyRequest & {
         Body: { message: string; temperature?: number }
         body: { message: string; temperature?: number }
+        userId?: string
       }
 
       return aiController.sendMessage(testRequest, reply)
@@ -166,7 +216,24 @@ export async function aiRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply,
     ) => {
-      return aiController.generateQuiz(request, reply)
+      const quizRequest = request as FastifyRequest & {
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          temperatura?: number
+        }
+        body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeQuestoes?: number
+          temperatura?: number
+        }
+        userId?: string
+      }
+      return aiController.generateQuiz(quizRequest, reply)
     },
   })
 
@@ -185,7 +252,24 @@ export async function aiRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply,
     ) => {
-      return aiController.generateFlashcards(request, reply)
+      const flashcardsRequest = request as FastifyRequest & {
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeFlashcards?: number
+          temperatura?: number
+        }
+        body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          quantidadeFlashcards?: number
+          temperatura?: number
+        }
+        userId?: string
+      }
+      return aiController.generateFlashcards(flashcardsRequest, reply)
     },
   })
 
@@ -204,7 +288,24 @@ export async function aiRoutes(fastify: FastifyInstance) {
       }>,
       reply: FastifyReply,
     ) => {
-      return aiController.generateSumario(request, reply)
+      const sumarioRequest = request as FastifyRequest & {
+        Body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+        body: {
+          text: string
+          image?: string
+          pdfTextChunks?: string[]
+          detalhamento?: 'basico' | 'intermediario' | 'detalhado'
+          temperatura?: number
+        }
+        userId?: string
+      }
+      return aiController.generateSumario(sumarioRequest, reply)
     },
   })
 }
