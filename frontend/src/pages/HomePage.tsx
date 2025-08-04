@@ -56,7 +56,10 @@ export function HomePage() {
       >
         <div className="text-center">
           <p className="text-red-500 mb-4">Erro ao carregar estudos: {error}</p>
-          <Button onClick={() => window.location.reload()}>
+          <Button
+            className="text-primary-foreground dark:text-foreground"
+            onClick={() => window.location.reload()}
+          >
             Tentar novamente
           </Button>
         </div>
@@ -71,7 +74,7 @@ export function HomePage() {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="bg-background">
         <header className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
@@ -125,10 +128,12 @@ export function HomePage() {
               </p>
               <Button
                 onClick={() => navigate('/dashboard/uploadpage')}
-                className="gap-2"
+                className="gap-2 text-primary-foreground dark:text-foreground"
               >
                 <Plus className="w-4 h-4" />
-                Criar Primeiro Estudo
+                <span className="text-primary-foreground dark:text-foreground">
+                  Criar Primeiro Estudo
+                </span>
               </Button>
             </div>
           ) : (

@@ -1,14 +1,18 @@
 import { Separator } from '@/components/ui/separator'
-import { User, CreditCard, Crown } from 'lucide-react'
+import { User, CreditCard, Crown, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import LogoutButton from '@/components/auth/LogoutButton'
 import { UpdateNameModal } from '@/components/UpdateNameModal'
 import { ResetPasswordModal } from '@/components/ResetPasswordModal'
 import { DeleteAccountModal } from '@/components/DeleteAccountModal'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 
 export function AccountPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
 
   if (!user) {
     return (
@@ -16,6 +20,12 @@ export function AccountPage() {
         <p>Carregando informações da conta...</p>
       </div>
     )
+  }
+
+  const handleLogout = () => {
+    logout()
+    toast.success('Até a próxima!')
+    navigate('/login')
   }
 
   return (
@@ -85,14 +95,16 @@ export function AccountPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Sair da conta</h2>
             <div className="flex gap-3 items-center">
-              <LogoutButton
+              <Button
                 variant="destructive"
                 className="bg-destructive text-primary-foreground dark:text-foreground hover:bg-destructive/90"
+                onClick={handleLogout}
               >
+                <LogOut className="h-4 w-4" />
                 <span className="text-primary-foreground dark:text-foreground">
                   Sair
                 </span>
-              </LogoutButton>
+              </Button>
             </div>
           </div>
         </div>

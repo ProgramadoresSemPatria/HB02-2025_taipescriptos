@@ -19,6 +19,7 @@ import {
   resetPasswordSchema,
   type ResetPasswordFormData,
 } from '@/schemas/accountPageSchema'
+import { toast } from 'sonner'
 
 export function ResetPasswordModal() {
   const [open, setOpen] = useState(false)
@@ -37,8 +38,8 @@ export function ResetPasswordModal() {
       // Verificar se o token existe
       const token = localStorage.getItem('token')
       if (!token) {
-        alert(
-          'Sessão expiada. Você será redirecionado para fazer login novamente.',
+        toast.error(
+          'Sessão expirada. Você será redirecionado para fazer login novamente.',
         )
         localStorage.removeItem('user')
         localStorage.removeItem('token')
@@ -51,12 +52,12 @@ export function ResetPasswordModal() {
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword,
       })
-      alert('Senha atualizada com sucesso!')
+      toast.success('Senha atualizada com sucesso!')
       setOpen(false)
       reset()
     } catch {
       reset()
-      alert('Erro ao atualizar senha. Verifique sua senha atual.')
+      toast.error('Erro ao atualizar senha. Verifique sua senha atual.')
     }
   }
 

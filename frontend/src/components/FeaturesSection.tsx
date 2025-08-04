@@ -44,7 +44,7 @@ const FeaturesSection = () => {
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                  <feature.icon className="h-6 w-6 text-accent" />
+                  <feature.icon className="h-6 w-6 text-primary-foreground dark:text-foreground" />
                 </div>
 
                 <div className="flex-1">

@@ -1,6 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -30,6 +36,7 @@ import {
 } from '@/services/aiServices'
 import { motion } from 'framer-motion'
 import { FileText, Brain, BookOpen, Upload, Type } from 'lucide-react'
+import { toast } from 'sonner'
 
 const NewUploadPage = () => {
   const navigate = useNavigate()
@@ -196,6 +203,9 @@ const NewUploadPage = () => {
       setProcessingStep(
         'Material de estudo criado com sucesso! Redirecionando...',
       )
+
+      toast.success('Material de estudo criado com sucesso! Redirecionando...')
+
       setTimeout(() => {
         // Redirecionar para o estudo específico usando o ID
         console.log(
@@ -217,10 +227,13 @@ const NewUploadPage = () => {
 
       if (error instanceof ApiException) {
         setError(`Erro da API: ${error.apiError.message}`)
+        toast.error(`Erro da API: ${error.apiError.message}`)
       } else if (error instanceof Error) {
         setError(error.message)
+        toast.error(error.message)
       } else {
         setError('Erro desconhecido ao processar')
+        toast.error('Erro desconhecido ao processar')
       }
     } finally {
       setIsLoading(false)
@@ -370,15 +383,21 @@ const NewUploadPage = () => {
                     Formatos suportados: {getSupportedFormats()}
                   </p>
                   {selectedFile && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
-                      <p className="text-sm text-blue-800">
-                        <strong>{selectedFile.name}</strong>
-                      </p>
-                      <p className="text-xs text-blue-600">
-                        Tipo: {detectFileType(selectedFile).type} | Tamanho:{' '}
-                        {(selectedFile.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
+                    <Card className="mt-4">
+                      <CardHeader>
+                        <CardTitle>
+                          <p className="text-sm font-semiboldtext-muted-foreground">
+                            {selectedFile.name}
+                          </p>
+                        </CardTitle>
+                        <CardDescription>
+                          <p className="text-sm text-muted-foreground">
+                            Tipo: {detectFileType(selectedFile).type} | Tamanho:{' '}
+                            {(selectedFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
                   )}
                 </div>
               )}
@@ -421,11 +440,13 @@ const NewUploadPage = () => {
                 className="w-full h-12 text-lg"
               >
                 {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
+                  <span className="flex items-center text-primary-foreground dark:text-foreground justify-center gap-2">
                     {processingStep || 'Processando...'}
                   </span>
                 ) : (
-                  'Gerar Material de Estudo'
+                  <span className="text-primary-foreground dark:text-foreground">
+                    Gerar Material de Estudo
+                  </span>
                 )}
               </Button>
             </div>

@@ -114,7 +114,7 @@ export function StudyDetailPage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30"
+      className="min-h-screen bg-background"
     >
       {/* Header */}
       <header className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
@@ -146,7 +146,7 @@ export function StudyDetailPage() {
           <Button
             variant={activeTab === 'summary' ? 'default' : 'outline'}
             onClick={() => handleTabChange('summary')}
-            className="gap-2 justify-start"
+            className="gap-2 justify-start dark:text-foreground"
           >
             <BookOpen className="w-4 h-4" />
             Resumo
@@ -154,7 +154,7 @@ export function StudyDetailPage() {
           <Button
             variant={activeTab === 'quiz' ? 'default' : 'outline'}
             onClick={() => handleTabChange('quiz')}
-            className="gap-2 justify-start"
+            className="gap-2 justify-start dark:text-foreground"
           >
             <Brain className="w-4 h-4" />
             Quiz
@@ -162,7 +162,7 @@ export function StudyDetailPage() {
           <Button
             variant={activeTab === 'flashcards' ? 'default' : 'outline'}
             onClick={() => handleTabChange('flashcards')}
-            className="gap-2 justify-start"
+            className="gap-2 justify-start dark:text-foreground"
           >
             <Zap className="w-4 h-4" />
             Flashcards

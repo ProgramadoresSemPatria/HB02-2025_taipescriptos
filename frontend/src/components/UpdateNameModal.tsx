@@ -20,6 +20,7 @@ import {
   updateNameSchema,
   type UpdateNameFormData,
 } from '@/schemas/accountPageSchema'
+import { toast } from 'sonner'
 
 export function UpdateNameModal() {
   const [open, setOpen] = useState(false)
@@ -42,7 +43,7 @@ export function UpdateNameModal() {
       // Verificar se o token existe
       const token = localStorage.getItem('token')
       if (!token) {
-        alert(
+        toast.error(
           'Sessão expirada. Você será redirecionado para fazer login novamente.',
         )
         // Limpar dados do localStorage
@@ -55,12 +56,12 @@ export function UpdateNameModal() {
 
       await accountService.updateName(data)
       await refreshUser()
-      alert('Nome atualizado com sucesso!')
+      toast.success('Nome atualizado com sucesso!')
       setOpen(false)
       reset()
     } catch {
       reset()
-      alert('Erro ao atualizar nome. Tente novamente.')
+      toast.error('Erro ao atualizar nome. Tente novamente.')
     }
   }
 

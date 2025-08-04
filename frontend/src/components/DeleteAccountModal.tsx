@@ -20,6 +20,7 @@ import {
   deleteAccountSchema,
   type DeleteAccountFormData,
 } from '@/schemas/accountPageSchema'
+import { toast } from 'sonner'
 
 export function DeleteAccountModal() {
   const [open, setOpen] = useState(false)
@@ -38,7 +39,7 @@ export function DeleteAccountModal() {
     try {
       const userString = localStorage.getItem('user')
       if (!userString) {
-        alert('Erro: Usuário não encontrado. Faça login novamente.')
+        toast.error('Erro: Usuário não encontrado. Faça login novamente.')
         return
       }
 
@@ -46,20 +47,20 @@ export function DeleteAccountModal() {
       const userId = user.id
 
       if (!userId) {
-        alert('Erro: ID do usuário não encontrado. Faça login novamente.')
+        toast.error('Erro: ID do usuário não encontrado. Faça login novamente.')
         return
       }
 
       await accountService.deleteAccount({
         userId,
       })
-      alert('Conta deletada com sucesso!')
+      toast.success('Conta deletada com sucesso!')
       logout()
       setOpen(false)
       reset()
     } catch (error) {
       reset()
-      alert('Erro ao deletar conta. Tente novamente.')
+      toast.error('Erro ao deletar conta. Tente novamente.')
     }
   }
 
