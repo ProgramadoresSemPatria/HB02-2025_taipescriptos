@@ -19,7 +19,6 @@ import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 
-
 type LoginFormInput = z.infer<typeof loginSchema>
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
@@ -134,9 +133,10 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"
+                    disabled={isLoading}
                     className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
                   >
-                    Login
+                    {isLoading ? 'Fazendo login...' : 'Login'}
                   </Button>
                 </div>
               </div>
@@ -145,17 +145,11 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <Link to="/register" className="underline underline-offset-4">
                   Cadastre-se
                 </Link>
-              {error && (
-                <div className="text-sm text-red-500 text-center">{error}</div>
-              )}
-              <div className="flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
-                >
-                  {isLoading ? 'Fazendo login...' : 'Login'}
-                </Button>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
               </div>
             </form>
           </CardContent>
