@@ -195,7 +195,16 @@ export class FileUploadService {
         },
       })
 
-      console.log('✅ StudyMaterial criado:', studyMaterial.id)
+
+      // Verificar se o material foi realmente criado
+      const createdMaterial = await prisma.studyMaterial.findUnique({
+        where: { id: studyMaterial.id },
+      })
+      
+      if (!createdMaterial) {
+        console.error('❌ StudyMaterial não encontrado após criação:', studyMaterial.id)
+        throw new Error('Erro: Material de estudo não foi criado corretamente')
+      }
 
       return {
         upload,
