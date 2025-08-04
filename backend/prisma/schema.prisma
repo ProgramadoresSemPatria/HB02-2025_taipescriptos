@@ -19,6 +19,7 @@ model User {
 
   uploads       FileUpload[]
   usageHistory  UsageHistory[]
+  studyMaterials StudyMaterial[]
 }
 
 model FileUpload {
@@ -43,20 +44,23 @@ enum FileType {
   docx
   txt
   raw
+  image
 }
 
 model StudyMaterial {
-id String @id @default(uuid())
-upload FileUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
-uploadId String @unique
-summary String
-quizJson Json
-flashcardsJson Json
-language String
-mode StudyMode
-createdAt DateTime @default(now())
+  id             String        @id @default(uuid())
+  upload         FileUpload?   @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  uploadId       String?       @unique
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  summary        String
+  quizJson       Json
+  flashcardsJson Json
+  language       String
+  mode           StudyMode
+  createdAt      DateTime      @default(now())
 
-usageHistory UsageHistory[]
+  usageHistory   UsageHistory[]
 }
 
 enum StudyMode {

@@ -100,7 +100,7 @@ export function NavMain({
           <SidebarMenuButton
             tooltip="Quick Create"
             className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground hover:text-primary-foreground hover:scale-[1.03] transition-all cursor-pointer min-w-8 duration-200 ease-linear"
-            onClick={() => navigate('/uploadpage')}
+            onClick={() => navigate('/dashboard/uploadpage')}
           >
             <CirclePlus />
             <span className="font-medium">Novo Estudo</span>

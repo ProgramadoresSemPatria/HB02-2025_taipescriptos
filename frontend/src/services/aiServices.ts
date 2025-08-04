@@ -1,7 +1,4 @@
-/**
- * Configuração da API
- */
-const API_BASE_URL = import.meta.env.VITE_API_URL
+import axiosInstance from '../lib/axios'
 
 /**
  * Tipos para a API
@@ -73,7 +70,7 @@ export interface SumarioResponse {
 export interface ApiError {
   message: string
   error?: string
-  issues?: Record<string, any>
+  issues?: Record<string, unknown>
 }
 
 /**
@@ -98,24 +95,17 @@ export async function sendMultimodalToAI(
   data: MultimodalRequest,
 ): Promise<AIResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/multimodal`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData as AIResponse
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
+    const response = await axiosInstance.post('/api/ai/multimodal', data)
+    return response.data as AIResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
     }
 
     console.error('Erro na comunicação com a API:', error)
@@ -134,24 +124,20 @@ export async function sendMessageToAI(
   temperature = 0.7,
 ): Promise<AIResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/message`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message, temperature }),
+    const response = await axiosInstance.post('/api/ai/message', {
+      message,
+      temperature,
     })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData as AIResponse
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
+    return response.data as AIResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
     }
 
     console.error('Erro na comunicação com a API:', error)
@@ -175,24 +161,17 @@ export async function generateQuiz(data: {
   temperatura?: number
 }): Promise<QuizResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/generate/quiz`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData as QuizResponse
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
+    const response = await axiosInstance.post('/api/ai/generate/quiz', data)
+    return response.data as QuizResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
     }
 
     console.error('Erro na geração de quiz:', error)
@@ -214,24 +193,20 @@ export async function generateFlashcards(data: {
   temperatura?: number
 }): Promise<FlashcardsResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/generate/flashcards`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData as FlashcardsResponse
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
+    const response = await axiosInstance.post(
+      '/api/ai/generate/flashcards',
+      data,
+    )
+    return response.data as FlashcardsResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
     }
 
     console.error('Erro na geração de flashcards:', error)
@@ -253,24 +228,17 @@ export async function generateSumario(data: {
   temperatura?: number
 }): Promise<SumarioResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/generate/sumario`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const responseData = await response.json()
-
-    if (!response.ok) {
-      throw new ApiException(response.status, responseData)
-    }
-
-    return responseData as SumarioResponse
-  } catch (error) {
-    if (error instanceof ApiException) {
-      throw error
+    const response = await axiosInstance.post('/api/ai/generate/sumario', data)
+    return response.data as SumarioResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
     }
 
     console.error('Erro na geração de sumário:', error)
@@ -286,8 +254,8 @@ export async function generateSumario(data: {
  */
 export async function checkAPIHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ai/health`)
-    return response.ok
+    const response = await axiosInstance.get('/api/ai/health')
+    return response.status === 200
   } catch {
     return false
   }

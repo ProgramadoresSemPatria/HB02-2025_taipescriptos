@@ -13,7 +13,7 @@ export interface FileUploadWithUser {
   userId: string
   filename: string
   contentText: string
-  type: 'pdf' | 'docx' | 'txt' | 'raw'
+  type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
   createdAt: Date
 
   user?: {
@@ -108,7 +108,7 @@ export class FileUploadRepository {
     userId: string
     filename: string
     contentText: string
-    type: 'pdf' | 'docx' | 'txt' | 'raw'
+    type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
   }): Promise<FileUploadWithUser> {
     return await prisma.fileUpload.create({
       data,
@@ -177,9 +177,6 @@ export class FileUploadRepository {
   ) {
     return this.findMany({ userId }, options)
   }
-
-  // Aqui você pode adicionar outros métodos específicos se precisar,
-  // como buscar por tipo de arquivo, faixa de criação, etc.
 }
 
 // Instância única do repositório

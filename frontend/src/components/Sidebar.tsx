@@ -11,22 +11,30 @@ import {
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { ThemeSelector } from './ThemeSelector'
+import { useAuth } from '@/hooks/useAuth'
 
-const data = {
-  user: {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+const navMainData = [
+  {
+    title: 'Início',
+    url: '/dashboard',
+    icon: <Home className="h-4 w-4" />,
   },
-  navMain: [
-    {
-      title: 'Início',
-      url: '/',
-      icon: <Home className="h-4 w-4" />,
-    },
-  ],
-}
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Dados do usuário para a sidebar
+  const userData = user
+    ? {
+        name: user.name,
+        email: user.email,
+      }
+    : {
+        name: 'Usuário',
+        email: 'carregando...',
+      }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -41,12 +49,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <Separator />
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMainData} />
       </SidebarContent>
       <ThemeSelector />
       <Separator />
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   )

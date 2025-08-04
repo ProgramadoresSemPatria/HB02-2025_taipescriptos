@@ -66,6 +66,13 @@ export interface LoginRequest {
   password: string
 }
 
+export interface EditProfileRequest {
+  name?: string
+  currentPassword?: string
+  newPassword?: string
+  confirmPassword?: string
+}
+
 // ===== SERVICE =====
 
 export class UsersService {
@@ -142,6 +149,50 @@ export class UsersService {
       throw new UserNotFoundError(id)
     }
     return user
+  }
+
+  /**
+   * Edita o perfil do usuário logado (nome e/ou senha)
+   */
+  async editProfile(
+    userId: string,
+    data: EditProfileRequest,
+  ): Promise<UserWithoutPassword> {
+    // Verificar se o usuário existe
+    const userWithPassword = await userRepository.findByIdWithPassword(userId)
+    if (!userWithPassword) {
+      throw new UserNotFoundError(userId)
+    }
+
+    const updateData: Partial<{ name: string; passwordHash: string }> = {}
+
+    // Se está atualizando o nome
+    if (data.name) {
+      updateData.name = data.name
+    }
+
+    // Se está atualizando a senha
+    if (data.newPassword && data.currentPassword) {
+      // Verificar se a senha atual está correta
+      const isCurrentPasswordValid = await bcrypt.compare(
+        data.currentPassword,
+        userWithPassword.passwordHash,
+      )
+      if (!isCurrentPasswordValid) {
+        throw new InvalidCredentialsError()
+      }
+
+      // Criptografar a nova senha
+      const saltRounds = 10
+      updateData.passwordHash = await bcrypt.hash(data.newPassword, saltRounds)
+    }
+
+    // Atualizar o usuário
+    const updatedUser = await userRepository.updateWithPasswordHash(
+      userId,
+      updateData,
+    )
+    return updatedUser
   }
 
   /**
