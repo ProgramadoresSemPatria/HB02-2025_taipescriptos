@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -14,11 +14,15 @@ import { FlashcardsSection } from '@/components/FlashCardsSection'
 export function StudyDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [material, setMaterial] = useState<StudyMaterialDetailed | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Determinar a aba ativa baseada no parâmetro da URL ou padrão
+  const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<'summary' | 'quiz' | 'flashcards'>(
-    'summary',
+    (tabParam as 'summary' | 'quiz' | 'flashcards') || 'summary',
   )
 
   useEffect(() => {
@@ -42,6 +46,28 @@ export function StudyDetailPage() {
 
     fetchMaterial()
   }, [id, navigate])
+
+  // Atualizar a aba ativa quando o parâmetro da URL mudar
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam && ['summary', 'quiz', 'flashcards'].includes(tabParam)) {
+      setActiveTab(tabParam as 'summary' | 'quiz' | 'flashcards')
+    }
+  }, [searchParams])
+
+  const handleTabChange = (tab: 'summary' | 'quiz' | 'flashcards') => {
+    setActiveTab(tab)
+    // Atualizar a URL com o parâmetro da aba
+    const newSearchParams = new URLSearchParams(searchParams)
+    if (tab === 'summary') {
+      newSearchParams.delete('tab')
+    } else {
+      newSearchParams.set('tab', tab)
+    }
+    navigate(`/dashboard/study/${id}?${newSearchParams.toString()}`, {
+      replace: true,
+    })
+  }
 
   if (loading) {
     return (
@@ -119,7 +145,7 @@ export function StudyDetailPage() {
         <div className="flex flex-col sm:flex-row gap-2 mb-8">
           <Button
             variant={activeTab === 'summary' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('summary')}
+            onClick={() => handleTabChange('summary')}
             className="gap-2 justify-start"
           >
             <BookOpen className="w-4 h-4" />
@@ -127,7 +153,7 @@ export function StudyDetailPage() {
           </Button>
           <Button
             variant={activeTab === 'quiz' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('quiz')}
+            onClick={() => handleTabChange('quiz')}
             className="gap-2 justify-start"
           >
             <Brain className="w-4 h-4" />
@@ -135,7 +161,7 @@ export function StudyDetailPage() {
           </Button>
           <Button
             variant={activeTab === 'flashcards' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('flashcards')}
+            onClick={() => handleTabChange('flashcards')}
             className="gap-2 justify-start"
           >
             <Zap className="w-4 h-4" />
