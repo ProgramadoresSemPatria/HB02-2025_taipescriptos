@@ -9,7 +9,7 @@ export const fileUploadParamsSchema = z.object({
 export const createFileUploadBodySchema = z.object({
   filename: z.string().min(1, 'filename é obrigatório'),
   contentText: z.string().min(1, 'contentText é obrigatório'),
-  type: z.enum(['pdf', 'docx', 'txt', 'raw']),
+  type: z.enum(['pdf', 'docx', 'txt', 'raw', 'image']),
 })
 
 // ==== SCHEMAS PARA SWAGGER ====
@@ -23,7 +23,7 @@ export const fileUploadSchemaSwagger = {
     userId: { type: 'string', format: 'uuid' },
     filename: { type: 'string' },
     contentText: { type: 'string' },
-    type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw'] },
+    type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw', 'image'] },
     createdAt: { type: 'string', format: 'date-time' },
   },
   required: ['id', 'userId', 'filename', 'contentText', 'type', 'createdAt'],
@@ -52,7 +52,7 @@ export const createFileUploadSchemaSwagger = {
       },
       type: {
         type: 'string',
-        enum: ['pdf', 'docx', 'txt', 'raw'],
+        enum: ['pdf', 'docx', 'txt', 'raw', 'image'],
         description: 'Tipo do arquivo',
       },
     },

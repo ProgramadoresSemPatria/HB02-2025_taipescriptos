@@ -24,11 +24,19 @@ const HeroSection = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="default" size="lg" className="text-lg px-8 py-6">
+            <Button
+              variant="default"
+              size="lg"
+              className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
+            >
               Começar agora
               <ArrowRight className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-6 cursor-pointer"
+            >
               Ver demonstração
             </Button>
           </div>

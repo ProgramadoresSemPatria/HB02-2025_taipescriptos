@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,13 +14,19 @@ import { loginSchema } from '@/schemas/auth-schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/hooks/useAuth'
 
 type LoginFormInput = z.infer<typeof loginSchema>
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const {
     control,
     handleSubmit,
@@ -35,9 +41,20 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
     },
   })
 
-  const onSubmit = (data: LoginFormInput) => {
-    console.log('Form submitted successfully:', data)
-    reset()
+  const onSubmit = async (data: LoginFormInput) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      await login(data)
+
+      // Redireciona para a página principal após login bem-sucedido
+      navigate('/')
+    } catch (error: any) {
+      setError(error.message || 'Erro ao fazer login')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -113,12 +130,18 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     </p>
                   )}
                 </div>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"
+                    disabled={isLoading}
                     className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
                   >
-                    Login
+                    {isLoading ? 'Fazendo login...' : 'Login'}
                   </Button>
                 </div>
               </div>

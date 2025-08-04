@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,13 +14,19 @@ import { registerSchema } from '@/schemas/auth-schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/hooks/useAuth'
 
 type RegisterFormInput = z.infer<typeof registerSchema>
 
 const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
+  const navigate = useNavigate()
+  const { register } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const {
     control,
     handleSubmit,
@@ -36,9 +42,20 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
     },
   })
 
-  const onSubmit = (data: RegisterFormInput) => {
-    console.log('Form submitted successfully:', data)
-    reset()
+  const onSubmit = async (data: RegisterFormInput) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      await register(data)
+
+      // Redireciona para a página principal após registro bem-sucedido
+      navigate('/')
+    } catch (error: any) {
+      setError(error.message || 'Erro ao criar conta')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -133,12 +150,18 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     </p>
                   )}
                 </div>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"
+                    disabled={isLoading}
                     className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
                   >
-                    Criar Conta
+                    {isLoading ? 'Criando conta...' : 'Criar Conta'}
                   </Button>
                 </div>
               </div>

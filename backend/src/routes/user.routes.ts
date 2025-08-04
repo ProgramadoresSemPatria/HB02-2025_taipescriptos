@@ -6,6 +6,7 @@ import {
   healthCheckSchema,
   getUserByIdSchema,
   updateUserSchemaSwagger,
+  editProfileSchemaSwagger,
 } from '../schemas/user.schema'
 
 // Extensão de tipos para JWT
@@ -130,6 +131,39 @@ export async function usersRoutes(fastify: FastifyInstance) {
         userId?: string
       }
       return usersController.getProfile(authenticatedRequest, reply)
+    },
+  })
+
+  // Editar perfil do usuário logado
+  fastify.put('/profile', {
+    schema: editProfileSchemaSwagger,
+    handler: async (
+      request: FastifyRequest<{
+        Body: {
+          name?: string
+          currentPassword?: string
+          newPassword?: string
+          confirmPassword?: string
+        }
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const editProfileRequest = request as FastifyRequest & {
+        Body: {
+          name?: string
+          currentPassword?: string
+          newPassword?: string
+          confirmPassword?: string
+        }
+        body: {
+          name?: string
+          currentPassword?: string
+          newPassword?: string
+          confirmPassword?: string
+        }
+        userId?: string
+      }
+      return usersController.editProfile(editProfileRequest, reply)
     },
   })
 
