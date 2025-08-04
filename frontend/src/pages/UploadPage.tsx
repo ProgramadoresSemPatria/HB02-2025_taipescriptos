@@ -6,7 +6,7 @@ import {
   detectFileType,
   processFile,
   type ProcessedFile,
-} from '@/lib/fileProcessing'
+} from '@/services/fileProcessing'
 import {
   generateQuiz,
   generateFlashcards,
@@ -15,7 +15,7 @@ import {
   type FlashcardsResponse,
   type SumarioResponse,
   ApiException,
-} from '@/lib/api'
+} from '@/services/aiServices'
 
 const UploadPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
