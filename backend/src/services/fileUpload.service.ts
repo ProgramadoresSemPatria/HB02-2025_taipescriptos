@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma'
+import { FileType } from '@prisma/client'
 
 export class FileUploadError extends Error {
   constructor(
@@ -27,7 +28,7 @@ export class FileUploadService {
     userId: string,
     filename: string,
     contentText: string,
-    type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image',
+    type: FileType,
   ) {
     const upload = await prisma.fileUpload.create({
       data: {
