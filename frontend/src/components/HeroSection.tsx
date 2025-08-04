@@ -1,8 +1,11 @@
 import { Button } from '../components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import ImageTest from '../assets/ImageTest.jpg'
+import { useNavigate } from 'react-router-dom'
 
 const HeroSection = () => {
+  const navigate = useNavigate()
+
   return (
     <section className="relative min-h-screen flex items-center justify-between overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/80 z-10" />
@@ -28,27 +31,21 @@ const HeroSection = () => {
               variant="default"
               size="lg"
               className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
+              onClick={() => navigate('/register')}
             >
               Começar agora
               <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-lg px-8 py-6 cursor-pointer"
-            >
-              Ver demonstração
             </Button>
           </div>
 
           <div className="flex items-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <span>Comece por apenas R$XX por mês</span>
+              <div className="w-2 h-2 bg-primary-foreground dark:bg-foreground rounded-full"></div>
+              <span>Estude em qualquer lugar</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <span>Assine em segundos</span>
+              <div className="w-2 h-2 bg-primary-foreground dark:bg-foreground rounded-full"></div>
+              <span>Crie seus próprios estudos</span>
             </div>
           </div>
         </div>
