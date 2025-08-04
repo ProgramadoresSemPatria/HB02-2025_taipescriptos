@@ -12,13 +12,12 @@ import NewUploadPage from './pages/NewUploadPage'
 export function Router() {
   return (
     <Routes>
-      <Route path="/landing" element={<LandingPage />} />
-      <Route path="/" element={<AppLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/study" element={<Index />} />
-        <Route path="/uploadpage" element={<NewUploadPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard/" element={<HomePage />} />
+        <Route path="/dashboard/account" element={<AccountPage />} />
+        <Route path="/dashboard/study" element={<Index />} />
+        <Route path="/dashboard/uploadpage" element={<NewUploadPage />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
