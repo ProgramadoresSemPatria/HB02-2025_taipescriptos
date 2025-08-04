@@ -67,6 +67,57 @@ export interface SumarioResponse {
   fonte: string
 }
 
+// ===== INTERFACES PARA STUDY MATERIALS =====
+
+export interface StudyMaterial {
+  id: string
+  uploadId: string | null
+  filename: string
+  fileType: string | null
+  summary: SumarioResponse
+  quiz: QuizResponse
+  flashcards: FlashcardsResponse
+  language: string
+  mode: string
+  createdAt: string
+  uploadCreatedAt: string | null
+}
+
+export interface StudyMaterialDetailed extends StudyMaterial {
+  contentText: string | null
+}
+
+export interface StudyMaterialsListResponse {
+  success: boolean
+  data: StudyMaterial[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+export interface CreateUploadWithStudyMaterialRequest {
+  filename: string
+  contentText: string
+  type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
+}
+
+export interface CreateUploadWithStudyMaterialResponse {
+  success: boolean
+  message: string
+  data: {
+    upload: any
+    studyMaterial: any
+    content: {
+      summary: SumarioResponse
+      quiz: QuizResponse
+      flashcards: FlashcardsResponse
+    }
+  }
+}
+
 export interface ApiError {
   message: string
   error?: string
@@ -258,5 +309,156 @@ export async function checkAPIHealth(): Promise<boolean> {
     return response.status === 200
   } catch {
     return false
+  }
+}
+
+// ===== FUNÇÕES PARA STUDY MATERIALS =====
+
+/**
+ * Lista todos os materiais de estudo do usuário autenticado
+ */
+export async function getStudyMaterials(
+  page: number = 1,
+  limit: number = 20,
+): Promise<StudyMaterialsListResponse> {
+  try {
+    const response = await axiosInstance.get('/api/study-materials', {
+      params: { page, limit },
+    })
+    return response.data as StudyMaterialsListResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
+    }
+
+    console.error('Erro ao buscar materiais de estudo:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Busca um material de estudo específico por ID
+ */
+export async function getStudyMaterialById(
+  id: string,
+): Promise<StudyMaterialDetailed> {
+  try {
+    const response = await axiosInstance.get(`/api/study-materials/${id}`)
+    return response.data.data as StudyMaterialDetailed
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
+    }
+
+    console.error('Erro ao buscar material de estudo:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Cria um upload e gera automaticamente todos os materiais de estudo
+ */
+export async function createUploadWithStudyMaterial(
+  data: CreateUploadWithStudyMaterialRequest,
+): Promise<CreateUploadWithStudyMaterialResponse> {
+  try {
+    const response = await axiosInstance.post(
+      '/api/uploads/with-study-material',
+      data,
+    )
+    return response.data as CreateUploadWithStudyMaterialResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
+    }
+
+    console.error('Erro ao criar upload com material de estudo:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Deleta um material de estudo
+ */
+export async function deleteStudyMaterial(id: string): Promise<void> {
+  try {
+    await axiosInstance.delete(`/api/study-materials/${id}`)
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { status: number; data: ApiError }
+      }
+      throw new ApiException(
+        axiosError.response.status,
+        axiosError.response.data,
+      )
+    }
+
+    console.error('Erro ao deletar material de estudo:', error)
+    throw new ApiException(500, {
+      message: 'Erro de conexão com o servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+    })
+  }
+}
+
+/**
+ * Faz upload de arquivo e gera automaticamente todos os materiais de estudo
+ */
+export async function createFileUploadWithStudyMaterial(
+  file: File,
+  language: string = 'pt-br',
+  mode: string = 'all',
+): Promise<CreateUploadWithStudyMaterialResponse> {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('language', language)
+    formData.append('mode', mode)
+
+    const response = await axiosInstance.post('/api/uploads/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data as CreateUploadWithStudyMaterialResponse
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response: { data: { message: string } }
+      }
+      throw new Error(
+        axiosError.response?.data?.message ||
+          'Erro ao fazer upload e gerar materiais',
+      )
+    }
+    throw new Error('Erro ao fazer upload e gerar materiais')
   }
 }

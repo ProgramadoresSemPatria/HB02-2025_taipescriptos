@@ -1,14 +1,25 @@
 import { Calendar, FileText, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useNavigate } from 'react-router-dom'
 
 interface StudyCardProps {
+  id: string
   title: string
   createdAt: string
 }
 
-export function StudyCard({ title, createdAt }: StudyCardProps) {
+export function StudyCard({ id, title, createdAt }: StudyCardProps) {
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    navigate(`/dashboard/study/${id}`)
+  }
+
   return (
-    <Card className="group cursor-pointer bg-gradient-to-br from-card via-card to-muted/20 border-0 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+    <Card
+      className="group cursor-pointer bg-gradient-to-br from-card via-card to-muted/20 border-0 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+      onClick={handleClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
