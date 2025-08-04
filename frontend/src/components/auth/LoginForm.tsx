@@ -16,7 +16,9 @@ import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { Brain } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
+
 
 type LoginFormInput = z.infer<typeof loginSchema>
 
@@ -57,67 +59,92 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   }
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-8">
-            <div className="flex items-center justify-start gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
-                <Brain className="h-6 w-6 text-primary-foreground dark:text-foreground" />
-              </div>
-              <span className="text-xl font-bold text-primary dark:text-primary-glow">
-                Study Buddy
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <CardTitle>Bem vindo de volta!</CardTitle>
-              <CardDescription>
-                Insira seu email e senha abaixo para fazer login na sua conta
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Controller
-                  control={control}
-                  name="email"
-                  render={({ field }) => (
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="email@exemplo.com"
-                      required
-                      {...field}
-                    />
-                  )}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Senha</Label>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className={cn('flex flex-col gap-6', className)} {...props}>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center justify-start gap-2">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+                  <Brain className="h-6 w-6 text-primary-foreground dark:text-foreground" />
                 </div>
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({ field }) => (
-                    <Input id="password" type="password" required {...field} />
-                  )}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
+                <span className="text-xl font-bold text-primary dark:text-primary-glow">
+                  Study Buddy
+                </span>
               </div>
+              <div className="flex flex-col">
+                <CardTitle>Bem vindo de volta!</CardTitle>
+                <CardDescription>
+                  Insira seu email e senha abaixo para fazer login na sua conta
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Controller
+                    control={control}
+                    name="email"
+                    render={({ field }) => (
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="email@exemplo.com"
+                        required
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Senha</Label>
+                  </div>
+                  <Controller
+                    control={control}
+                    name="password"
+                    render={({ field }) => (
+                      <Input
+                        id="password"
+                        type="password"
+                        required
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Button
+                    type="submit"
+                    className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
+                  >
+                    Login
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-4 text-center text-sm">
+                Não tem uma conta ainda?{' '}
+                <Link to="/register" className="underline underline-offset-4">
+                  Cadastre-se
+                </Link>
               {error && (
                 <div className="text-sm text-red-500 text-center">{error}</div>
               )}
@@ -130,17 +157,11 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                   {isLoading ? 'Fazendo login...' : 'Login'}
                 </Button>
               </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Não tem uma conta ainda?{' '}
-              <Link to="/register" className="underline underline-offset-4">
-                Cadastre-se
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
   )
 }
 
