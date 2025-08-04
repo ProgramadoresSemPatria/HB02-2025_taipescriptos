@@ -61,6 +61,57 @@ export async function fileUploadRoutes(fastify: FastifyInstance) {
       fileUploadController.createFileUpload(request as any, reply),
   })
 
+  // Rota privada - criar upload com geração de material de estudo
+  fastify.post('/with-study-material', {
+    preHandler: authMiddleware,
+    schema: {
+      tags: ['FileUpload'],
+      description:
+        'Criar upload e gerar automaticamente resumo, quiz e flashcards',
+      body: {
+        type: 'object',
+        properties: {
+          filename: { type: 'string' },
+          contentText: { type: 'string' },
+          type: {
+            type: 'string',
+            enum: ['pdf', 'docx', 'txt', 'raw', 'image'],
+          },
+        },
+        required: ['filename', 'contentText', 'type'],
+      },
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                upload: { type: 'object' },
+                studyMaterial: { type: 'object' },
+                content: {
+                  type: 'object',
+                  properties: {
+                    summary: { type: 'object' },
+                    quiz: { type: 'object' },
+                    flashcards: { type: 'object' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply) =>
+      fileUploadController.createFileUploadWithStudyMaterial(
+        request as any,
+        reply,
+      ),
+  })
+
   // Rota pública - buscar arquivo por ID (sem autenticação para permitir compartilhamento)
   fastify.get('/:id', {
     schema: fileUploadParamsSchemaSwagger,
@@ -74,5 +125,42 @@ export async function fileUploadRoutes(fastify: FastifyInstance) {
     schema: fileUploadListSchemaSwagger,
     handler: (request: FastifyRequest, reply: FastifyReply) =>
       fileUploadController.listUserUploads(request as any, reply),
+  })
+
+  // Rota privada - criar upload com file multipart
+  fastify.post('/file', {
+    preHandler: authMiddleware,
+    schema: {
+      tags: ['FileUpload'],
+      description:
+        'Upload de arquivo com geração automática de material de estudo',
+      consumes: ['multipart/form-data'],
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                upload: { type: 'object' },
+                studyMaterial: { type: 'object' },
+                content: {
+                  type: 'object',
+                  properties: {
+                    summary: { type: 'object' },
+                    quiz: { type: 'object' },
+                    flashcards: { type: 'object' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply) =>
+      fileUploadController.createFileUploadWithFile(request as any, reply),
   })
 }
