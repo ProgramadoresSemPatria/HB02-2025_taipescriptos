@@ -8,20 +8,49 @@ import { AccountPage } from './pages/AccountPage'
 import Index from './pages/Index'
 import UploadPage from './pages/UploadPage'
 import NewUploadPage from './pages/NewUploadPage'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import PublicRoute from './components/auth/PublicRoute'
 
 export function Router() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route element={<AppLayout />}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard/" element={<HomePage />} />
         <Route path="/dashboard/account" element={<AccountPage />} />
         <Route path="/dashboard/study" element={<Index />} />
         <Route path="/dashboard/uploadpage" element={<NewUploadPage />} />
       </Route>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/upload" element={<UploadPage />} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/upload"
+        element={
+          <ProtectedRoute>
+            <UploadPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }
