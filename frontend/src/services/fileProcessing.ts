@@ -114,7 +114,9 @@ export async function extractTextFromPDF(
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum)
     const textContent = await page.getTextContent()
-    const pageText = textContent.items.map((item: any) => item.str).join(' ')
+    const pageText = textContent.items
+      .map((item) => ('str' in item ? item.str : ''))
+      .join(' ')
     fullText += `\n\n--- Página ${pageNum} ---\n${pageText}`
   }
   const chunks = splitTextIntoChunks(fullText.trim(), maxChunkSize)

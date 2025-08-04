@@ -27,6 +27,7 @@
     "@shikijs/transformers": "^3.9.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "^24.1.0",
+    "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "katex": "^0.16.22",

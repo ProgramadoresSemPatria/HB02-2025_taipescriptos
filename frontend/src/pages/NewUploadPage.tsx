@@ -14,7 +14,7 @@ import {
 import { FileText, Brain, BookOpen } from 'lucide-react'
 import { type FormEventHandler, useState, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { processFile } from '@/lib/fileProcessing'
+import { processFile } from '@/services/fileProcessing'
 import {
   generateQuiz,
   generateFlashcards,
@@ -23,7 +23,7 @@ import {
   type FlashcardsResponse,
   type SumarioResponse,
   ApiException,
-} from '@/lib/api'
+} from '@/services/aiServices'
 import { motion } from 'framer-motion'
 
 type StudyType = 'quiz' | 'flashcards' | 'sumario'
@@ -39,10 +39,14 @@ const NewUploadPage = () => {
   >(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[] | undefined>()
+  const [selectedStudyType, setSelectedStudyType] = useState<StudyType>('quiz')
 
   const handleDrop = (files: File[]) => {
     console.log(files)
     setSelectedFiles(files)
+    if (files.length > 0) {
+      setSelectedFile(files[0])
+    }
   }
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
