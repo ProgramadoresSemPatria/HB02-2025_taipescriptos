@@ -1,8 +1,14 @@
 import { CheckCircle, BookOpen, Lightbulb } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { SumarioResponse } from '@/services/aiServices'
 
-export function ResumoSection() {
-  const topicos = [
+interface ResumoSectionProps {
+  summary?: SumarioResponse
+}
+
+export function ResumoSection({ summary }: ResumoSectionProps) {
+  // Dados padrão como fallback
+  const defaultTopicos = [
     {
       categoria: 'Conceitos Fundamentais',
       items: [
@@ -39,6 +45,28 @@ export function ResumoSection() {
     },
   ]
 
+  const titulo = summary?.titulo || 'Resumo do Material'
+  const resumoExecutivo =
+    summary?.resumoExecutivo ||
+    'Material de estudo sobre os conceitos fundamentais.'
+  const topicosChave = summary?.topicosChave || []
+  const pontosPrincipais = summary?.pontosPrincipais || []
+  const conclusao = summary?.conclusao
+
+  // Se há dados da API, usar eles; senão usar os dados padrão
+  const topicos = summary
+    ? [
+        {
+          categoria: 'Tópicos Chave',
+          items: topicosChave,
+        },
+        ...pontosPrincipais.map((ponto) => ({
+          categoria: ponto.topico,
+          items: [ponto.descricao],
+        })),
+      ]
+    : defaultTopicos
+
   return (
     <section id="resumo" className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
@@ -46,10 +74,8 @@ export function ResumoSection() {
           <span className="text-2xl">📝</span>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Resumo</h2>
-          <p className="text-muted-foreground">
-            Tópicos principais organizados pela IA
-          </p>
+          <h2 className="text-2xl font-bold text-foreground">{titulo}</h2>
+          <p className="text-muted-foreground">{resumoExecutivo}</p>
         </div>
       </div>
 
@@ -90,14 +116,33 @@ export function ResumoSection() {
         ))}
       </div>
 
+      {/* Conclusão se disponível */}
+      {conclusao && (
+        <Card className="p-6 bg-accent/5 border-accent/20">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-5 h-5 text-accent" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg text-foreground mb-3">
+                Conclusão
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {conclusao}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 flex items-center gap-3">
         <div className="w-8 h-8 bg-accent/20 rounded-full flex items-center justify-center">
           <Lightbulb className="w-4 h-4 text-accent" />
         </div>
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-accent">Dica de estudo:</strong> Use este
-            resumo como base e depois teste seus conhecimentos no quiz!
+            <strong className="text-accent text-black">Dica de estudo:</strong>{' '}
+            Use este resumo como base e depois teste seus conhecimentos no quiz!
           </p>
         </div>
       </div>

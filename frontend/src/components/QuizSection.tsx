@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckCircle, XCircle, RotateCcw, Trophy, Brain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { QuizResponse } from '@/services/aiServices'
 
 interface Pergunta {
   id: number
@@ -11,7 +12,11 @@ interface Pergunta {
   explicacao: string
 }
 
-export function QuizSection() {
+interface QuizSectionProps {
+  quiz?: QuizResponse
+}
+
+export function QuizSection({ quiz }: QuizSectionProps) {
   const [perguntaAtual, setPerguntaAtual] = useState(0)
   const [respostas, setRespostas] = useState<{ [key: number]: number }>({})
   const [mostrarResultado, setMostrarResultado] = useState(false)
@@ -20,7 +25,8 @@ export function QuizSection() {
   )
   const [quizFinalizado, setQuizFinalizado] = useState(false)
 
-  const perguntas: Pergunta[] = [
+  // Dados padrão como fallback
+  const defaultPerguntas: Pergunta[] = [
     {
       id: 1,
       pergunta: 'Qual é o principal objetivo da fotossíntese?',
@@ -56,6 +62,20 @@ export function QuizSection() {
         'Esta equação mostra que 6 moléculas de CO₂ e 6 de H₂O, com energia luminosa, produzem 1 molécula de glicose e 6 de O₂.',
     },
   ]
+
+  // Usar dados da API se disponíveis, senão usar dados padrão
+  const perguntas: Pergunta[] = quiz?.questoes
+    ? quiz.questoes.map((questao, index) => ({
+        id: index + 1,
+        pergunta: questao.pergunta,
+        opcoes: questao.opcoes,
+        resposta: questao.respostaCorreta,
+        explicacao: questao.explicacao || 'Explicação não disponível',
+      }))
+    : defaultPerguntas
+
+  const titulo = quiz?.titulo || 'Quiz Interativo'
+  const descricao = quiz?.descricao || 'Teste seus conhecimentos com este quiz!'
 
   const responderPergunta = (opcaoIndex: number) => {
     setRespostaSelecionada(opcaoIndex)
@@ -148,8 +168,8 @@ export function QuizSection() {
           <span className="text-2xl">❓</span>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Quiz</h2>
-          <p className="text-muted-foreground">Teste seus conhecimentos</p>
+          <h2 className="text-2xl font-bold text-foreground">{titulo}</h2>
+          <p className="text-muted-foreground">{descricao}</p>
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { FlashcardsResponse } from '@/services/aiServices'
 
 interface Flashcard {
   id: number
@@ -16,12 +17,19 @@ interface Flashcard {
   categoria: string
 }
 
-export function FlashcardsSection() {
+interface FlashcardsSectionProps {
+  flashcards?: FlashcardsResponse
+}
+
+export function FlashcardsSection({
+  flashcards: flashcardsData,
+}: FlashcardsSectionProps) {
   const [cardAtual, setCardAtual] = useState(0)
   const [virado, setVirado] = useState(false)
   const [cardsEstudados, setCardsEstudados] = useState<Set<number>>(new Set())
 
-  const flashcards: Flashcard[] = [
+  // Dados padrão como fallback
+  const defaultFlashcards: Flashcard[] = [
     {
       id: 1,
       frente: 'O que é fotossíntese?',
@@ -58,6 +66,16 @@ export function FlashcardsSection() {
       categoria: 'Processo',
     },
   ]
+
+  // Usar dados reais se disponíveis, senão usar dados padrão
+  const flashcards: Flashcard[] = flashcardsData?.flashcards
+    ? flashcardsData.flashcards.map((card, index) => ({
+        id: index + 1,
+        frente: card.frente,
+        verso: card.verso,
+        categoria: card.categoria || 'Geral',
+      }))
+    : defaultFlashcards
 
   const virarCard = () => {
     setVirado(!virado)
@@ -147,8 +165,12 @@ export function FlashcardsSection() {
                   {card.categoria}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold mb-4">{card.frente}</h3>
-              <p className="text-sm opacity-80">Clique para ver a resposta</p>
+              <h3 className="text-lg font-semibold mb-4 text-black">
+                {card.frente}
+              </h3>
+              <p className="text-sm opacity-80 text-black">
+                Clique para ver a resposta
+              </p>
             </div>
 
             {/* Verso do Card */}
