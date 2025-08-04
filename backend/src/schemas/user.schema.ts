@@ -158,6 +158,10 @@ export const registerUserSchemaSwagger = {
           type: 'string',
           description: 'Mensagem de sucesso',
         },
+        token: {
+          type: 'string',
+          description: 'Token JWT para autenticação',
+        },
         user: {
           type: 'object',
           properties: {

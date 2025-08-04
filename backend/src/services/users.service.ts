@@ -98,6 +98,30 @@ export class UsersService {
     return user
   }
 
+  async registerWithToken(data: RegisterRequest): Promise<AuthResponse> {
+    const emailExists = await userRepository.emailExists(data.email)
+    if (emailExists) {
+      throw new UserAlreadyExistsError(data.email)
+    }
+
+    const user = await userRepository.create({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    })
+
+    const token = jwt.sign(
+      { sub: user.id, email: user.email, role: user.role },
+      env.JWT_SECRET,
+      { expiresIn: '7d' },
+    )
+
+    return {
+      token,
+      user,
+    }
+  }
+
   /**
    * Faz login do usuário
    */
