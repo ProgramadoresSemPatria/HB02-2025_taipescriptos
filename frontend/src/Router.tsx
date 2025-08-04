@@ -8,6 +8,7 @@ import { AccountPage } from './pages/AccountPage'
 import Index from './pages/Index'
 import UploadPage from './pages/UploadPage'
 import NewUploadPage from './pages/NewUploadPage'
+import { StudyDetailPage } from './pages/StudyDetailPage'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
 
@@ -25,6 +26,7 @@ export function Router() {
         <Route path="/dashboard/" element={<HomePage />} />
         <Route path="/dashboard/account" element={<AccountPage />} />
         <Route path="/dashboard/study" element={<Index />} />
+        <Route path="/dashboard/study/:id" element={<StudyDetailPage />} />
         <Route path="/dashboard/uploadpage" element={<NewUploadPage />} />
       </Route>
       <Route

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,9 +9,8 @@ import {
   type ProcessedFile,
 } from '@/services/fileProcessing'
 import {
-  generateQuiz,
-  generateFlashcards,
-  generateSumario,
+  createUploadWithStudyMaterial,
+  createFileUploadWithStudyMaterial,
   type QuizResponse,
   type FlashcardsResponse,
   type SumarioResponse,
@@ -18,6 +18,7 @@ import {
 } from '@/services/aiServices'
 
 const UploadPage = () => {
+  const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -75,11 +76,9 @@ const UploadPage = () => {
     setResults(null)
 
     try {
-      let payload: {
-        text: string
-        image?: string
-        pdfTextChunks?: string[]
-      }
+      let filename: string
+      let contentText: string
+      let fileType: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
 
       if (inputMode === 'file' && selectedFile) {
         // Processar arquivo baseado no tipo
@@ -106,49 +105,59 @@ const UploadPage = () => {
           setProcessedImage(processedFile.image)
         }
 
-        payload = {
-          text: processedFile.text,
-          image: processedFile.image || undefined,
-          pdfTextChunks: processedFile.pdfTextChunks || undefined,
-        }
+        filename = selectedFile.name
+        contentText = processedFile.text
+        fileType =
+          fileInfo.type === 'image'
+            ? 'image'
+            : fileInfo.type === 'pdf'
+              ? 'pdf'
+              : fileInfo.type === 'text'
+                ? 'txt'
+                : 'raw'
       } else {
         // Modo texto
-        payload = {
-          text: message,
-        }
+        filename = `Texto_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
+        contentText = message
+        fileType = 'txt'
       }
 
-      // Gerar conteúdos usando rotas separadas
-      setProcessingStep('Gerando quiz...')
-      const quizPromise = generateQuiz({
-        ...payload,
-        quantidadeQuestoes: 5,
-        temperatura: 0.3,
+      // Usar o novo endpoint que salva tudo no banco de dados
+      setProcessingStep('Criando material de estudo completo...')
+
+      let response
+      if (inputMode === 'file' && selectedFile) {
+        // Upload direto do arquivo - mais eficiente
+        response = await createFileUploadWithStudyMaterial(
+          selectedFile,
+          'pt-br',
+          'all',
+        )
+      } else {
+        // Modo texto - usar endpoint JSON
+        response = await createUploadWithStudyMaterial({
+          filename,
+          contentText,
+          type: fileType,
+        })
+      }
+
+      // Exibir os resultados gerados
+      setResults({
+        quiz: response.data.content.quiz,
+        flashcards: response.data.content.flashcards,
+        sumario: response.data.content.summary,
       })
 
-      setProcessingStep('Gerando flashcards...')
-      const flashcardsPromise = generateFlashcards({
-        ...payload,
-        quantidadeFlashcards: 5,
-        temperatura: 0.3,
-      })
-
-      setProcessingStep('Gerando sumário...')
-      const sumarioPromise = generateSumario({
-        ...payload,
-        detalhamento: 'intermediario' as const,
-        temperatura: 0.3,
-      })
-
-      setProcessingStep('Finalizando...')
-      const [quiz, flashcards, sumario] = await Promise.all([
-        quizPromise,
-        flashcardsPromise,
-        sumarioPromise,
-      ])
-
-      setResults({ quiz, flashcards, sumario })
       setProcessingStep('')
+
+      // Mostrar mensagem de sucesso e redirecionar após 2 segundos
+      setProcessingStep(
+        '✅ Material de estudo criado com sucesso! Redirecionando...',
+      )
+      setTimeout(() => {
+        navigate('/dashboard/study')
+      }, 2000)
 
       // Limpar campos após sucesso
       if (inputMode === 'file') {
@@ -279,6 +288,38 @@ const UploadPage = () => {
             {processingStep && (
               <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
                 <p className="text-sm text-yellow-800">⏳ {processingStep}</p>
+              </div>
+            )}
+
+            {/* Mensagem de sucesso */}
+            {results && (
+              <div className="p-4 bg-green-50 rounded border border-green-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-sm text-green-800">
+                    ✅ Material de estudo criado com sucesso!
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      window.location.href = '/dashboard/study'
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    📚 Ver Material de Estudo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setResults(null)
+                      setSelectedFile(null)
+                      setMessage('')
+                      setError(null)
+                    }}
+                  >
+                    ➕ Criar Novo Material
+                  </Button>
+                </div>
               </div>
             )}
 

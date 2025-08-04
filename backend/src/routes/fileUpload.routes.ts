@@ -4,6 +4,8 @@ import {
   fileUploadParamsSchemaSwagger,
   fileUploadListSchemaSwagger,
   createFileUploadSchemaSwagger,
+  createFileUploadWithStudyMaterialSchemaSwagger,
+  createFileUploadWithFileSchemaSwagger,
 } from '../schemas/fileUpload.schema'
 
 // Estendendo as tipagens do Fastify para incluir userId e userRole
@@ -61,6 +63,17 @@ export async function fileUploadRoutes(fastify: FastifyInstance) {
       fileUploadController.createFileUpload(request as any, reply),
   })
 
+  // Rota privada - criar upload com geração de material de estudo
+  fastify.post('/with-study-material', {
+    preHandler: authMiddleware,
+    schema: createFileUploadWithStudyMaterialSchemaSwagger,
+    handler: (request: FastifyRequest, reply: FastifyReply) =>
+      fileUploadController.createFileUploadWithStudyMaterial(
+        request as any,
+        reply,
+      ),
+  })
+
   // Rota pública - buscar arquivo por ID (sem autenticação para permitir compartilhamento)
   fastify.get('/:id', {
     schema: fileUploadParamsSchemaSwagger,
@@ -74,5 +87,13 @@ export async function fileUploadRoutes(fastify: FastifyInstance) {
     schema: fileUploadListSchemaSwagger,
     handler: (request: FastifyRequest, reply: FastifyReply) =>
       fileUploadController.listUserUploads(request as any, reply),
+  })
+
+  // Rota privada - criar upload com file multipart
+  fastify.post('/file', {
+    preHandler: authMiddleware,
+    schema: createFileUploadWithFileSchemaSwagger,
+    handler: (request: FastifyRequest, reply: FastifyReply) =>
+      fileUploadController.createFileUploadWithFile(request as any, reply),
   })
 }

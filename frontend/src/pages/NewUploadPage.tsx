@@ -1,9 +1,13 @@
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dropzone,
   DropzoneContent,
   DropzoneEmptyState,
 } from '@/components/ui/kibo-ui/dropzone'
-
 import {
   AIInput,
   AIInputSubmit,
@@ -11,117 +15,203 @@ import {
   AIInputToolbar,
   AIInputTools,
 } from '@/components/ui/kibo-ui/ai/input'
-import { FileText, Brain, BookOpen } from 'lucide-react'
-import { type FormEventHandler, useState, useRef } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { processFile } from '@/services/fileProcessing'
 import {
-  generateQuiz,
-  generateFlashcards,
-  generateSumario,
+  detectFileType,
+  processFile,
+  type ProcessedFile,
+} from '@/services/fileProcessing'
+import {
+  createUploadWithStudyMaterial,
+  createFileUploadWithStudyMaterial,
   type QuizResponse,
   type FlashcardsResponse,
   type SumarioResponse,
   ApiException,
 } from '@/services/aiServices'
 import { motion } from 'framer-motion'
-
-type StudyType = 'quiz' | 'flashcards' | 'sumario'
+import { FileText, Brain, BookOpen, Upload, Type } from 'lucide-react'
 
 const NewUploadPage = () => {
+  const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
+  const [results, setResults] = useState<{
+    quiz?: QuizResponse
+    flashcards?: FlashcardsResponse
+    sumario?: SumarioResponse
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<
-    QuizResponse | FlashcardsResponse | SumarioResponse | null
-  >(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [processedChunks, setProcessedChunks] = useState<string[] | null>(null)
+  const [processedImage, setProcessedImage] = useState<string | null>(null)
+  const [inputMode, setInputMode] = useState<'file' | 'text'>('file')
   const [selectedFiles, setSelectedFiles] = useState<File[] | undefined>()
-  const [selectedStudyType, setSelectedStudyType] = useState<StudyType>('quiz')
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null
+    setSelectedFile(file)
+    setResults(null)
+    setError(null)
+    setProcessedChunks(null)
+    setProcessedImage(null)
+    if (file) {
+      const fileInfo = detectFileType(file)
+      console.log('Arquivo detectado:', fileInfo)
+      setMessage('') // Limpa texto quando arquivo é selecionado
+    }
+  }
 
   const handleDrop = (files: File[]) => {
     console.log(files)
     setSelectedFiles(files)
     if (files.length > 0) {
       setSelectedFile(files[0])
+      setResults(null)
+      setError(null)
+      setProcessedChunks(null)
+      setProcessedImage(null)
+      const fileInfo = detectFileType(files[0])
+      console.log('Arquivo detectado:', fileInfo)
+      setMessage('') // Limpa texto quando arquivo é selecionado
     }
   }
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
-    event.preventDefault()
+  const handleModeChange = (mode: 'file' | 'text') => {
+    setInputMode(mode)
+    setSelectedFile(null)
+    setSelectedFiles(undefined)
+    setMessage('')
+    setResults(null)
+    setError(null)
+    setProcessedChunks(null)
+    setProcessedImage(null)
+  }
 
-    if (!selectedFile) {
-      setError('Por favor, anexe um arquivo para gerar o estudo')
+  const handleSubmit = async () => {
+    // Validação: apenas texto OU arquivo
+    if (inputMode === 'file' && !selectedFile) {
+      setError('Por favor, selecione um arquivo')
+      return
+    }
+    if (inputMode === 'text' && !message.trim()) {
+      setError('Por favor, digite um texto')
       return
     }
 
     setIsLoading(true)
     setError(null)
-    setResult(null)
+    setResults(null)
 
     try {
-      // Processa arquivo
-      setProcessingStep('Processando arquivo...')
-      const processedFile = await processFile(selectedFile, message || '')
+      let filename: string
+      let contentText: string
+      let fileType: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
 
-      // Cria prompt automático baseado no tipo selecionado
-      let promptText = message.trim()
-      if (!promptText) {
-        switch (selectedStudyType) {
-          case 'quiz':
-            promptText = 'Crie um quiz educativo baseado neste conteúdo'
-            break
-          case 'flashcards':
-            promptText = 'Crie flashcards para estudo baseados neste conteúdo'
-            break
-          case 'sumario':
-            promptText = 'Crie um sumário estruturado deste conteúdo'
-            break
+      if (inputMode === 'file' && selectedFile) {
+        // Processar arquivo baseado no tipo
+        setProcessingStep('Detectando tipo de arquivo...')
+        const fileInfo = detectFileType(selectedFile)
+
+        if (fileInfo.type === 'unsupported') {
+          throw new Error(
+            `Tipo de arquivo não suportado: ${fileInfo.extension}`,
+          )
         }
+
+        setProcessingStep(`Processando ${fileInfo.type}...`)
+        const processedFile: ProcessedFile = await processFile(
+          selectedFile,
+          'Analise o conteúdo fornecido',
+        )
+
+        // Atualizar estado para exibir no frontend
+        if (processedFile.pdfTextChunks) {
+          setProcessedChunks(processedFile.pdfTextChunks)
+        }
+        if (processedFile.image) {
+          setProcessedImage(processedFile.image)
+        }
+
+        filename = selectedFile.name
+        contentText = processedFile.text
+        fileType =
+          fileInfo.type === 'image'
+            ? 'image'
+            : fileInfo.type === 'pdf'
+              ? 'pdf'
+              : fileInfo.type === 'text'
+                ? 'txt'
+                : 'raw'
+      } else {
+        // Modo texto
+        filename = `Texto_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
+        contentText = message
+        fileType = 'txt'
       }
 
-      // Prepara dados para a API
-      const apiData = {
-        text: promptText,
-        image: processedFile?.image,
-        pdfTextChunks: processedFile?.pdfTextChunks,
-        temperatura: 0.3,
+      // Usar o novo endpoint que salva tudo no banco de dados
+      setProcessingStep('Criando material de estudo completo...')
+
+      let response
+      if (inputMode === 'file' && selectedFile) {
+        // Upload direto do arquivo - mais eficiente
+        response = await createFileUploadWithStudyMaterial(
+          selectedFile,
+          'pt-br',
+          'all',
+        )
+      } else {
+        // Modo texto - usar endpoint JSON
+        response = await createUploadWithStudyMaterial({
+          filename,
+          contentText,
+          type: fileType,
+        })
       }
 
-      // Chama a API baseado no tipo de estudo selecionado
-      setProcessingStep('Gerando conteúdo com IA...')
-      let response: QuizResponse | FlashcardsResponse | SumarioResponse
+      // Exibir os resultados gerados
+      setResults({
+        quiz: response.data.content.quiz,
+        flashcards: response.data.content.flashcards,
+        sumario: response.data.content.summary,
+      })
 
-      switch (selectedStudyType) {
-        case 'quiz':
-          response = await generateQuiz({
-            ...apiData,
-            quantidadeQuestoes: 5,
-          })
-          break
-        case 'flashcards':
-          response = await generateFlashcards({
-            ...apiData,
-            quantidadeFlashcards: 10,
-          })
-          break
-        case 'sumario':
-          response = await generateSumario({
-            ...apiData,
-            detalhamento: 'intermediario',
-          })
-          break
-      }
-
-      setResult(response)
       setProcessingStep('')
 
-      // Limpa campos após sucesso
-      setMessage('')
-      setSelectedFile(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      // Verificar se o ID do studyMaterial está disponível
+      const studyMaterialId = response.data.studyMaterial?.id
+      if (!studyMaterialId) {
+        console.error(
+          'ID do StudyMaterial não encontrado na resposta:',
+          response.data,
+        )
+        setError('Erro: ID do material de estudo não encontrado')
+        return
+      }
+
+      console.log('✅ Material de estudo criado com ID:', studyMaterialId)
+
+      // Mostrar mensagem de sucesso e redirecionar após 3 segundos
+      setProcessingStep(
+        'Material de estudo criado com sucesso! Redirecionando...',
+      )
+      setTimeout(() => {
+        // Redirecionar para o estudo específico usando o ID
+        console.log(
+          '🔄 Redirecionando para:',
+          `/dashboard/study/${studyMaterialId}`,
+        )
+        navigate(`/dashboard/study/${studyMaterialId}`)
+      }, 3000)
+
+      // Limpar campos após sucesso
+      if (inputMode === 'file') {
+        setSelectedFile(null)
+        setSelectedFiles(undefined)
+      } else {
+        setMessage('')
+      }
     } catch (error) {
       console.error('Erro ao processar:', error)
 
@@ -130,7 +220,7 @@ const NewUploadPage = () => {
       } else if (error instanceof Error) {
         setError(error.message)
       } else {
-        setError('Erro desconhecido ao processar conteúdo')
+        setError('Erro desconhecido ao processar')
       }
     } finally {
       setIsLoading(false)
@@ -138,21 +228,40 @@ const NewUploadPage = () => {
     }
   }
 
+  const getSupportedFormats = () => {
+    return 'Imagens (JPG, PNG, GIF, WebP), PDFs, arquivos de texto (TXT, MD)'
+  }
+
+  const inputModes = [
+    {
+      mode: 'file' as const,
+      label: 'Enviar Arquivo',
+      icon: Upload,
+      description: 'Anexe um arquivo para processar',
+    },
+    {
+      mode: 'text' as const,
+      label: 'Digite Texto',
+      icon: Type,
+      description: 'Digite o conteúdo diretamente',
+    },
+  ]
+
   const studyTypes = [
     {
-      type: 'quiz' as StudyType,
+      type: 'quiz',
       label: 'Quiz',
       icon: Brain,
       description: 'Questões de múltipla escolha',
     },
     {
-      type: 'flashcards' as StudyType,
+      type: 'flashcards',
       label: 'Flashcards',
       icon: BookOpen,
       description: 'Cartões para memorização',
     },
     {
-      type: 'sumario' as StudyType,
+      type: 'sumario',
       label: 'Sumário',
       icon: FileText,
       description: 'Resumo estruturado',
@@ -167,230 +276,164 @@ const NewUploadPage = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex min-h-full justify-center p-4">
-        <div className="flex flex-col justify-center gap-12 p-6 max-w-2xl w-full">
+        <div className="flex flex-col justify-center gap-12 p-6 max-w-4xl w-full">
           <div>
             <div className="text-center gap-2 flex flex-col">
               <h1 className="text-3xl font-bold tracking-tight">
-                Gere um novo estudo
+                IA Multimodal - Studdy Buddy
               </h1>
               <p className="text-muted-foreground mt-1">
-                Anexe um arquivo (imagem, PDF ou documento) ou insira um texto
-                para gerar conteúdo educativo
+                Gere quiz, flashcards e resumos através de arquivos ou texto
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {studyTypes.map(({ type, label, icon: Icon, description }) => (
-                  <Card
-                    key={type}
-                    className="flex justify-center items-center flex-col h-auto p-4 gap-3"
-                  >
-                    <Icon size={24} />
+              {/* Seletor de modo */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3">
+                  Modo de entrada
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {inputModes.map(
+                    ({ mode, label, icon: Icon, description }) => (
+                      <Card
+                        key={mode}
+                        className={`flex justify-center items-center flex-col h-auto p-4 gap-3 cursor-pointer transition-colors ${
+                          inputMode === mode ? 'border-primary' : ''
+                        }`}
+                        onClick={() => handleModeChange(mode)}
+                      >
+                        <Icon size={24} />
+                        <div className="text-center">
+                          <div className="font-semibold text-sm sm:text-base">
+                            {label}
+                          </div>
+                          <div className="text-sm sm:text-xs opacity-70">
+                            {description}
+                          </div>
+                        </div>
+                      </Card>
+                    ),
+                  )}
+                </div>
+              </div>
 
-                    <div className="text-center">
-                      <div className="font-semibold text-sm sm:text-base">
-                        {label}
-                      </div>
-                      <div className="text-sm sm:text-xs opacity-70">
-                        {description}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+              {/* Tipos de estudo */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3">
+                  Tipos de Material
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {studyTypes.map(
+                    ({ type, label, icon: Icon, description }) => (
+                      <Card
+                        key={type}
+                        className="flex justify-center items-center flex-col h-auto p-4 gap-3"
+                      >
+                        <Icon size={24} />
+                        <div className="text-center">
+                          <div className="font-semibold text-sm sm:text-base">
+                            {label}
+                          </div>
+                          <div className="text-sm sm:text-xs opacity-70">
+                            {description}
+                          </div>
+                        </div>
+                      </Card>
+                    ),
+                  )}
+                </div>
               </div>
             </div>
           </div>
+
           <div>
             <div className="flex justify-center items-center flex-col gap-4">
-              <Dropzone
-                accept={{ 'image/*': [] }}
-                maxFiles={1}
-                maxSize={1024 * 1024 * 10}
-                minSize={1024}
-                onDrop={handleDrop}
-                onError={console.error}
-                src={selectedFiles}
-              >
-                <DropzoneEmptyState />
-                <DropzoneContent />
-              </Dropzone>
-
-              <p className="text-muted-foreground text-lg">Ou</p>
-
-              <AIInput onSubmit={handleSubmit}>
-                <AIInputTextarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Instruções adicionais (opcional) - Anexe um arquivo para começar..."
-                  disabled={isLoading}
-                />
-                <AIInputToolbar className="flex items-end">
-                  <AIInputTools></AIInputTools>
-                  <AIInputSubmit disabled={!selectedFile} />
-                </AIInputToolbar>
-              </AIInput>
-            </div>
-
-            {/* Status de processamento */}
-            {processingStep && (
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">
-                    ⏳ {processingStep}
+              {/* Input de arquivo (apenas se modo = file) */}
+              {inputMode === 'file' && (
+                <div className="w-full">
+                  <Dropzone
+                    accept={{
+                      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+                      'application/pdf': ['.pdf'],
+                      'text/*': ['.txt', '.md'],
+                    }}
+                    maxFiles={1}
+                    maxSize={1024 * 1024 * 10}
+                    minSize={1024}
+                    onDrop={handleDrop}
+                    onError={console.error}
+                    src={selectedFiles}
+                  >
+                    <DropzoneEmptyState />
+                    <DropzoneContent />
+                  </Dropzone>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Formatos suportados: {getSupportedFormats()}
                   </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Mensagem de erro */}
-            {error && (
-              <Card className="border-red-200">
-                <CardContent className="p-4">
-                  <p className="text-sm text-red-600">❌ {error}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Resultado */}
-            {result && (
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-xl font-bold">{result.titulo}</h2>
-                      {'descricao' in result && result.descricao && (
-                        <p className="text-muted-foreground">
-                          {result.descricao}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {result.modelo} •{' '}
-                        {new Date(result.timestamp).toLocaleString('pt-BR')} •
-                        Fonte: {result.fonte}
+                  {selectedFile && (
+                    <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                      <p className="text-sm text-blue-800">
+                        <strong>{selectedFile.name}</strong>
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Tipo: {detectFileType(selectedFile).type} | Tamanho:{' '}
+                        {(selectedFile.size / 1024).toFixed(1)} KB
                       </p>
                     </div>
+                  )}
+                </div>
+              )}
 
-                    {/* Renderiza conteúdo baseado no tipo */}
-                    {'questoes' in result && (
-                      <div className="space-y-4">
-                        {result.questoes.map((questao, index) => (
-                          <div key={index} className="border rounded-lg p-4">
-                            <h3 className="font-semibold mb-2">
-                              {index + 1}. {questao.pergunta}
-                            </h3>
-                            <div className="space-y-1 mb-2">
-                              {questao.opcoes.map((opcao, opcaoIndex) => (
-                                <div
-                                  key={opcaoIndex}
-                                  className={`p-2 rounded ${
-                                    opcaoIndex === questao.respostaCorreta
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-50'
-                                  }`}
-                                >
-                                  {String.fromCharCode(65 + opcaoIndex)}.{' '}
-                                  {opcao}
-                                </div>
-                              ))}
-                            </div>
-                            {questao.explicacao && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                <strong>Explicação:</strong>{' '}
-                                {questao.explicacao}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+              {/* Campo de texto (apenas se modo = text) */}
+              {inputMode === 'text' && (
+                <div className="w-full">
+                  <label className="block text-sm font-medium mb-2">
+                    Digite seu texto
+                  </label>
+                  <AIInput>
+                    <AIInputTextarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Digite o texto que você quer usar para gerar quiz, flashcards e resumo..."
+                      disabled={isLoading}
+                      className="min-h-[120px]"
+                    />
+                  </AIInput>
+                </div>
+              )}
 
-                    {'flashcards' in result && (
-                      <div className="grid gap-4">
-                        {result.flashcards.map((flashcard, index) => (
-                          <div key={index} className="border rounded-lg">
-                            <div className="grid grid-cols-2 divide-x">
-                              <div className="p-4">
-                                <h4 className="font-medium text-sm text-muted-foreground mb-1">
-                                  Frente
-                                </h4>
-                                <p>{flashcard.frente}</p>
-                              </div>
-                              <div className="p-4">
-                                <h4 className="font-medium text-sm text-muted-foreground mb-1">
-                                  Verso
-                                </h4>
-                                <p>{flashcard.verso}</p>
-                              </div>
-                            </div>
-                            {flashcard.categoria && (
-                              <div className="px-4 pb-2">
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                  {flashcard.categoria}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+              {/* Mensagem de erro */}
+              {error && (
+                <Card className="border-red-200">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </CardContent>
+                </Card>
+              )}
 
-                    {'resumoExecutivo' in result && (
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="font-semibold mb-2">
-                            Resumo Executivo
-                          </h3>
-                          <p className="text-sm">{result.resumoExecutivo}</p>
-                        </div>
-
-                        <div>
-                          <h3 className="font-semibold mb-2">Tópicos-Chave</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {result.topicosChave.map((topico, index) => (
-                              <span
-                                key={index}
-                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-                              >
-                                {topico}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="font-semibold mb-2">
-                            Pontos Principais
-                          </h3>
-                          <div className="space-y-3">
-                            {result.pontosPrincipais.map((ponto, index) => (
-                              <div
-                                key={index}
-                                className="border-l-4 border-blue-200 pl-4"
-                              >
-                                <h4 className="font-medium">{ponto.topico}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {ponto.descricao}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {result.conclusao && (
-                          <div>
-                            <h3 className="font-semibold mb-2">Conclusão</h3>
-                            <p className="text-sm">{result.conclusao}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              {/* Botão de envio */}
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  isLoading ||
+                  (inputMode === 'file' && !selectedFile) ||
+                  (inputMode === 'text' && !message.trim())
+                }
+                className="w-full h-12 text-lg"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    {processingStep || 'Processando...'}
+                  </span>
+                ) : (
+                  'Gerar Material de Estudo'
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     </motion.div>
   )
 }
+
 export default NewUploadPage

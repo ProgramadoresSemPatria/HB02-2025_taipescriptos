@@ -170,6 +170,11 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <Link to="/login" className="underline underline-offset-4">
                   Faça login
                 </Link>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
               </div>
             </form>
           </CardContent>

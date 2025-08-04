@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import fastifyJwt from '@fastify/jwt'
 import fastifyCors from '@fastify/cors'
+import fastifyMultipart from '@fastify/multipart'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { env } from './src/env'
@@ -8,15 +9,10 @@ import { fileUploadRoutes } from './src/routes/fileUpload.routes'
 import { usageHistoryRoutes } from './src/routes/usageHistory.routes'
 import { usersRoutes } from './src/routes/user.routes'
 import { aiRoutes } from './src/routes/ai.routes'
+import { studyMaterialRoutes } from './src/routes/studyMaterial.routes'
 import { ZodError } from 'zod'
-import { fileUploadSchemaSwagger } from './src/schemas/fileUpload.schema'
 
 export const app = fastify()
-
-app.addSchema({
-  $id: 'FileUpload',
-  ...fileUploadSchemaSwagger,
-})
 
 app.register(fastifySwagger, {
   openapi: {
@@ -62,6 +58,14 @@ app.register(fastifySwaggerUi, {
 
 app.register(fastifyJwt, { secret: env.JWT_SECRET })
 
+app.register(fastifyMultipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1, // máximo 1 arquivo por upload
+    fieldSize: 1024 * 1024, // 1MB para campos de texto
+  }
+})
+
 app.register(fastifyCors, {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -73,6 +77,7 @@ app.register(usersRoutes, { prefix: '/api/users' })
 app.register(usageHistoryRoutes, { prefix: '/api/usage-history' })
 app.register(fileUploadRoutes, { prefix: '/api/uploads' })
 app.register(aiRoutes, { prefix: '/api/ai' })
+app.register(studyMaterialRoutes, { prefix: '/api/study-materials' })
 
 app.get('/', async () => {
   return {

@@ -473,11 +473,12 @@ ${userInput}
 
 **INSTRUÇÕES IMPORTANTES:**
 - Crie exatamente ${quantidade} flashcards
-- Na "frente" coloque uma pergunta, conceito ou termo
-- No "verso" coloque a resposta, definição ou explicação
-- Use linguagem clara e concisa
+- Na "frente" coloque uma pergunta, conceito ou termo (MÍNIMO 5 CARACTERES)
+- No "verso" coloque a resposta, definição ou explicação (MÍNIMO 5 CARACTERES)
+- Use linguagem clara e concisa, mas sempre com conteúdo substancial
 - Categorize por temas quando possível
 - Responda APENAS com JSON válido, sem texto adicional
+- Certifique-se de que tanto a frente quanto o verso tenham pelo menos 5 caracteres cada
 
 **SOLICITAÇÃO DO USUÁRIO:**
 ${userInput}
@@ -488,8 +489,8 @@ ${userInput}
   "descricao": "Breve descrição do conjunto de flashcards",
   "flashcards": [
     {
-      "frente": "Pergunta ou termo a ser memorizado",
-      "verso": "Resposta ou definição clara",
+      "frente": "Pergunta ou termo a ser memorizado (mínimo 5 caracteres)",
+      "verso": "Resposta ou definição clara (mínimo 5 caracteres)",
       "categoria": "Categoria temática (opcional)",
       "dificuldade": "facil"
     }

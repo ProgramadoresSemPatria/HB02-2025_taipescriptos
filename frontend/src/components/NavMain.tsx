@@ -5,6 +5,7 @@ import {
   BookCheck,
   FileStack,
   NotebookPen,
+  AlertCircle,
 } from 'lucide-react'
 
 import {
@@ -24,6 +25,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible'
+import { useStudyMaterials } from '@/hooks/useStudyMaterials'
+import { useState } from 'react'
 
 export function NavMain({
   items,
@@ -35,6 +38,8 @@ export function NavMain({
   }[]
 }) {
   const navigate = useNavigate()
+  const { materials, loading, error } = useStudyMaterials(1, 10) // Carregar até 10 estudos
+  const [openStudyId, setOpenStudyId] = useState<string | null>(null)
 
   return (
     <SidebarGroup>
@@ -51,49 +56,107 @@ export function NavMain({
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-          <Collapsible asChild defaultOpen={true} className="group/collapsible">
+
+          {/* Estudos do usuário */}
+          {loading ? (
             <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip="Teste">
-                  <BookOpen />
-                  <span>JavaScript Estudo</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton asChild>
-                      <a href="#">
-                        <NotebookPen />
-                        <span>Resumo</span>
-                      </a>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton asChild>
-                      <a href="#">
-                        <BookCheck />
-                        <span>Quiz</span>
-                      </a>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton asChild>
-                      <a href="#">
-                        <FileStack />
-                        <span>Flashcards</span>
-                      </a>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </CollapsibleContent>
+              <SidebarMenuButton disabled>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span>Carregando...</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
-          </Collapsible>
+          ) : error ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton disabled>
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <span className="text-destructive text-xs">
+                  Erro ao carregar
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : materials.length === 0 ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton disabled>
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground text-xs">
+                  Nenhum estudo
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : (
+            materials.map((study) => (
+              <Collapsible
+                key={study.id}
+                asChild
+                open={openStudyId === study.id}
+                onOpenChange={(open) => setOpenStudyId(open ? study.id : null)}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip={study.filename}>
+                      <BookOpen />
+                      <span className="truncate">
+                        {study.filename.replace(/\.[^/.]+$/, '')}
+                      </span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          onClick={() =>
+                            navigate(`/dashboard/study/${study.id}`)
+                          }
+                        >
+                          <a href={`/dashboard/study/${study.id}`}>
+                            <NotebookPen />
+                            <span>Resumo</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          onClick={() =>
+                            navigate(`/dashboard/study/${study.id}?tab=quiz`)
+                          }
+                        >
+                          <a href={`/dashboard/study/${study.id}?tab=quiz`}>
+                            <BookCheck />
+                            <span>Quiz</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/study/${study.id}?tab=flashcards`,
+                            )
+                          }
+                        >
+                          <a
+                            href={`/dashboard/study/${study.id}?tab=flashcards`}
+                          >
+                            <FileStack />
+                            <span>Flashcards</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            ))
+          )}
         </SidebarMenu>
         <Separator />
         <SidebarMenuItem className="flex items-center gap-2">
