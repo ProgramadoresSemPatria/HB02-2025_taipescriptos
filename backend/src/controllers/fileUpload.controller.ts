@@ -22,6 +22,16 @@ interface CreateFileUploadRequest extends AuthenticatedRequest {
   }
 }
 
+interface CreateFileUploadWithStudyMaterialRequest
+  extends AuthenticatedRequest {
+  Body: {
+    filename: string
+    contentText: string
+    type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image'
+    generateStudyMaterial?: boolean
+  }
+}
+
 interface GetFileUploadByIdRequest extends AuthenticatedRequest {
   Params: {
     id: string
@@ -62,6 +72,37 @@ export class FileUploadController {
         success: true,
         message: 'Upload criado com sucesso',
         data: upload,
+      })
+    } catch (error) {
+      return this.handleError(error, reply)
+    }
+  }
+
+  async createFileUploadWithStudyMaterial(
+    request: CreateFileUploadWithStudyMaterialRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      if (!request.userId)
+        return reply.status(401).send({
+          success: false,
+          message: 'Token de autenticação necessário',
+          code: 'AUTHENTICATION_REQUIRED',
+        })
+
+      const validated = createFileUploadBodySchema.parse(request.body)
+
+      const result = await fileUploadService.createFileUploadWithStudyMaterial(
+        request.userId,
+        validated.filename,
+        validated.contentText,
+        validated.type,
+      )
+
+      return reply.status(201).send({
+        success: true,
+        message: 'Upload e material de estudo criados com sucesso',
+        data: result,
       })
     } catch (error) {
       return this.handleError(error, reply)
@@ -129,6 +170,72 @@ export class FileUploadController {
     } catch (error) {
       return this.handleError(error, reply)
     }
+  }
+
+  async createFileUploadWithFile(
+    request: AuthenticatedRequest,
+    reply: FastifyReply,
+  ) {
+    try {
+      console.log('📁 Processando upload de arquivo...')
+
+      // Processar multipart data
+      const data = await request.file()
+      console.log(
+        '📄 Dados do arquivo:',
+        data ? 'arquivo encontrado' : 'nenhum arquivo',
+      )
+
+      if (!data) {
+        return reply.status(400).send({
+          success: false,
+          message: 'Nenhum arquivo foi enviado',
+          code: 'NO_FILE_PROVIDED',
+        })
+      }
+
+      const buffer = await data.toBuffer()
+      const contentText = buffer.toString('utf-8')
+
+      if (!request.userId) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Usuário não autenticado',
+          code: 'UNAUTHENTICATED',
+        })
+      }
+
+      const result = await fileUploadService.createFileUploadWithStudyMaterial(
+        request.userId,
+        data.filename,
+        contentText,
+        this.getFileTypeFromMimetype(data.mimetype),
+      )
+
+      return reply.status(201).send({
+        success: true,
+        message: 'Upload realizado e material de estudo gerado com sucesso',
+        data: result,
+      })
+    } catch (error: unknown) {
+      console.error('Erro no createFileUploadWithFile:', error)
+      return reply.status(500).send({
+        success: false,
+        message: 'Erro interno do servidor',
+        code: 'INTERNAL_SERVER_ERROR',
+      })
+    }
+  }
+
+  private getFileTypeFromMimetype(
+    mimetype: string,
+  ): 'pdf' | 'docx' | 'txt' | 'raw' | 'image' {
+    if (mimetype.includes('pdf')) return 'pdf'
+    if (mimetype.includes('word') || mimetype.includes('document'))
+      return 'docx'
+    if (mimetype.includes('text')) return 'txt'
+    if (mimetype.includes('image')) return 'image'
+    return 'raw'
   }
 
   private handleError(error: unknown, reply: FastifyReply) {
