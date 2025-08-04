@@ -58,7 +58,13 @@ app.register(fastifySwaggerUi, {
 
 app.register(fastifyJwt, { secret: env.JWT_SECRET })
 
-app.register(fastifyMultipart)
+app.register(fastifyMultipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1, // máximo 1 arquivo por upload
+    fieldSize: 1024 * 1024, // 1MB para campos de texto
+  }
+})
 
 app.register(fastifyCors, {
   origin: true,
