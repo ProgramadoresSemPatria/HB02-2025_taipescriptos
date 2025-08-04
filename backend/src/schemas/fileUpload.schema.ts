@@ -14,25 +14,7 @@ export const createFileUploadBodySchema = z.object({
 
 // ==== SCHEMAS PARA SWAGGER ====
 
-// Schema de objeto FileUpload para documentação Swagger/OpenAPI
-export const fileUploadSchemaSwagger = {
-  type: 'object',
-  description: 'Representação de um upload de arquivo',
-  properties: {
-    id: { type: 'string', format: 'uuid' },
-    userId: { type: 'string', format: 'uuid' },
-    filename: { type: 'string' },
-    contentText: { type: 'string' },
-    type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw', 'image'] },
-    createdAt: { type: 'string', format: 'date-time' },
-  },
-  required: ['id', 'userId', 'filename', 'contentText', 'type', 'createdAt'],
-}
-
-export const fileUploadDefinitionSwagger = {
-  FileUpload: fileUploadSchemaSwagger,
-}
-
+// Schema para criação de upload
 export const createFileUploadSchemaSwagger = {
   tags: ['FileUpload'],
   description: 'Realizar upload de um arquivo de estudo',
@@ -63,7 +45,17 @@ export const createFileUploadSchemaSwagger = {
       properties: {
         success: { type: 'boolean' },
         message: { type: 'string' },
-        data: { $ref: 'FileUpload#' },
+        data: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string', format: 'uuid' },
+            filename: { type: 'string' },
+            contentText: { type: 'string' },
+            type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw', 'image'] },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
       },
     },
     400: {
@@ -91,7 +83,17 @@ export const fileUploadParamsSchemaSwagger = {
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { $ref: 'FileUpload#' },
+        data: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string', format: 'uuid' },
+            filename: { type: 'string' },
+            contentText: { type: 'string' },
+            type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw', 'image'] },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
       },
     },
     404: {
@@ -123,7 +125,17 @@ export const fileUploadListSchemaSwagger = {
         success: { type: 'boolean' },
         data: {
           type: 'array',
-          items: { $ref: 'FileUpload#' },
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              userId: { type: 'string', format: 'uuid' },
+              filename: { type: 'string' },
+              contentText: { type: 'string' },
+              type: { type: 'string', enum: ['pdf', 'docx', 'txt', 'raw', 'image'] },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -132,6 +144,81 @@ export const fileUploadListSchemaSwagger = {
             limit: { type: 'number' },
             total: { type: 'number' },
             totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
+
+// Schema para criação de upload com material de estudo
+export const createFileUploadWithStudyMaterialSchemaSwagger = {
+  tags: ['FileUpload'],
+  description: 'Criar upload e gerar automaticamente resumo, quiz e flashcards',
+  security: [{ bearerAuth: [] }],
+  body: {
+    type: 'object',
+    properties: {
+      filename: { type: 'string' },
+      contentText: { type: 'string' },
+      type: {
+        type: 'string',
+        enum: ['pdf', 'docx', 'txt', 'raw', 'image'],
+      },
+    },
+    required: ['filename', 'contentText', 'type'],
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: {
+          type: 'object',
+          properties: {
+            upload: { type: 'object' },
+            studyMaterial: { type: 'object' },
+            content: {
+              type: 'object',
+              properties: {
+                summary: { type: 'object' },
+                quiz: { type: 'object' },
+                flashcards: { type: 'object' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+
+// Schema para upload de arquivo multipart
+export const createFileUploadWithFileSchemaSwagger = {
+  tags: ['FileUpload'],
+  description: 'Upload de arquivo com geração automática de material de estudo',
+  security: [{ bearerAuth: [] }],
+  consumes: ['multipart/form-data'],
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: {
+          type: 'object',
+          properties: {
+            upload: { type: 'object' },
+            studyMaterial: { type: 'object' },
+            content: {
+              type: 'object',
+              properties: {
+                summary: { type: 'object' },
+                quiz: { type: 'object' },
+                flashcards: { type: 'object' },
+              },
+            },
           },
         },
       },
