@@ -1,9 +1,12 @@
-import { Brain } from 'lucide-react'
+import { Brain, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
+import { useAuth } from '@/hooks/useAuth'
+import LogoutButton from './auth/LogoutButton'
 
 const Header = () => {
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
 
   const handleLogin = () => {
     navigate('/login')
@@ -26,20 +29,36 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
-          <nav className="flex items-center gap-2 md:gap-4 lg:gap-4">
-            <Button
-              onClick={handleLogin}
-              className="text-xs md:text-sm lg:text-base px-3 md:px-4 lg:px-4 py-1.5 md:py-2 lg:py-2 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
-            >
-              Login
-            </Button>
-            <Button
-              onClick={handleRegister}
-              className="text-xs md:text-sm lg:text-base px-3 md:px-4 lg:px-4 py-1.5 md:py-2 lg:py-2 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
-            >
-              Registro
-            </Button>
-          </nav>
+          {isAuthenticated ? (
+            <nav className="flex items-center gap-2 md:gap-4 lg:gap-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span className="text-sm font-medium hidden md:block">
+                  {user?.name}
+                </span>
+              </div>
+              <LogoutButton
+                variant="outline"
+                size="sm"
+                className="text-xs md:text-sm"
+              />
+            </nav>
+          ) : (
+            <nav className="flex items-center gap-2 md:gap-4 lg:gap-4">
+              <Button
+                onClick={handleLogin}
+                className="text-xs md:text-sm lg:text-base px-3 md:px-4 lg:px-4 py-1.5 md:py-2 lg:py-2 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
+              >
+                Login
+              </Button>
+              <Button
+                onClick={handleRegister}
+                className="text-xs md:text-sm lg:text-base px-3 md:px-4 lg:px-4 py-1.5 md:py-2 lg:py-2 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground cursor-pointer"
+              >
+                Registro
+              </Button>
+            </nav>
+          )}
         </div>
       </div>
     </header>

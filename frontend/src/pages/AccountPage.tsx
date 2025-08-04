@@ -1,9 +1,21 @@
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Lock, PencilLine, Trash } from 'lucide-react'
+import { Lock, PencilLine, Trash, User, CreditCard, Crown } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/hooks/useAuth'
+import LogoutButton from '@/components/auth/LogoutButton'
 
 export function AccountPage() {
+  const { user } = useAuth()
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>Carregando informações da conta...</p>
+      </div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,7 +29,7 @@ export function AccountPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Seu nome</h2>
             <div className="flex gap-3 items-center">
-              <p>John Doe</p>
+              <p>{user.name}</p>
               <Button>
                 <PencilLine className="text-primary-foreground dark:text-foreground" />
                 <span className="text-primary-foreground dark:text-foreground">
@@ -29,7 +41,34 @@ export function AccountPage() {
           <Separator />
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Seu email</h2>
-            <span className="flex gap-3 items-center">johndoe@example.com</span>
+            <span className="flex gap-3 items-center">{user.email}</span>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Créditos</h2>
+            <div className="flex gap-2 items-center">
+              <CreditCard className="h-4 w-4" />
+              <span>{user.credits} créditos</span>
+            </div>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Status da conta</h2>
+            <div className="flex gap-2 items-center">
+              {user.isPremium ? (
+                <>
+                  <Crown className="h-4 w-4 text-yellow-500" />
+                  <span className="text-yellow-600 dark:text-yellow-400">
+                    Premium
+                  </span>
+                </>
+              ) : (
+                <>
+                  <User className="h-4 w-4" />
+                  <span>Básico</span>
+                </>
+              )}
+            </div>
           </div>
           <Separator />
           <div className="flex items-center justify-between">
@@ -45,12 +84,15 @@ export function AccountPage() {
           </div>
           <Separator />
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Deletar conta</h2>
+            <h2 className="text-xl font-bold">Sair da conta</h2>
             <div className="flex gap-3 items-center">
-              <Button className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                <Trash />
-                Deletar conta
-              </Button>
+              <LogoutButton
+                variant="destructive"
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                <Trash className="h-4 w-4" />
+                Sair
+              </LogoutButton>
             </div>
           </div>
         </div>
