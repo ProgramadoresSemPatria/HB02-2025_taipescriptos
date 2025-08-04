@@ -452,8 +452,46 @@ export async function createFileUploadWithStudyMaterial(
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'response' in error) {
       const axiosError = error as {
-        response: { data: { message: string } }
+        response: { status: number; data: { message: string; code?: string } }
       }
+
+      // Tratamento específico para arquivo muito grande
+      if (axiosError.response?.status === 413) {
+        throw new Error(
+          'Arquivo muito grande. O tamanho máximo permitido é 10MB.',
+        )
+      }
+
+      // Tratamento específico para formato de arquivo inválido
+      if (
+        axiosError.response?.status === 400 &&
+        axiosError.response?.data?.code === 'INVALID_FILE_FORMAT'
+      ) {
+        throw new Error(
+          'Formato de arquivo não suportado. Tente um arquivo de texto, PDF ou imagem válida.',
+        )
+      }
+
+      // Tratamento específico para erro de extração de PDF
+      if (
+        axiosError.response?.status === 400 &&
+        axiosError.response?.data?.code === 'PDF_EXTRACTION_ERROR'
+      ) {
+        throw new Error(
+          'Erro ao processar o arquivo PDF. Verifique se o arquivo não está corrompido.',
+        )
+      }
+
+      // Tratamento específico para erro de validação da IA
+      if (
+        axiosError.response?.status === 422 &&
+        axiosError.response?.data?.code === 'AI_VALIDATION_ERROR'
+      ) {
+        throw new Error(
+          'Erro na geração de materiais de estudo. Tente novamente.',
+        )
+      }
+
       throw new Error(
         axiosError.response?.data?.message ||
           'Erro ao fazer upload e gerar materiais',

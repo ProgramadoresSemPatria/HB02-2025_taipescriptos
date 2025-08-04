@@ -86,6 +86,8 @@ export class FileUploadService {
     filename: string,
     contentText: string,
     type: FileType,
+    mimetype?: string,
+    pdfTextChunks?: string[],
   ) {
     console.log('🚀 Iniciando createFileUploadWithStudyMaterial:', {
       userId,
@@ -109,24 +111,69 @@ export class FileUploadService {
     try {
       console.log('🤖 Iniciando geração de materiais com IA...')
 
-      // Gerar os materiais de estudo usando a IA
+      // Para imagens e PDFs, precisamos tratar o conteúdo de forma diferente
+      let textForAI: string
+      let imageForAI: string | undefined
+      let pdfChunksForAI: string[] | undefined
+      
+      if (type === 'image') {
+        // Se for imagem, criamos uma data URL e passamos como image
+        const imageMimeType = mimetype || 'image/jpeg'
+        imageForAI = `data:${imageMimeType};base64,${contentText}`
+        textForAI = 'Analise esta imagem e gere materiais de estudo baseados no seu conteúdo.'
+      } else if (type === 'pdf') {
+        // Se for PDF, usamos os chunks se disponíveis, senão o texto extraído
+        if (pdfTextChunks && pdfTextChunks.length > 0) {
+          pdfChunksForAI = pdfTextChunks
+          textForAI = 'Analise o conteúdo deste PDF e gere materiais de estudo baseados no seu conteúdo.'
+        } else {
+          textForAI = contentText
+        }
+      } else {
+        // Para outros tipos, usamos o texto normalmente
+        textForAI = contentText
+      }
+
+      // Função para gerar materiais com retry
+      const generateWithRetry = async (generator: () => Promise<any>, maxRetries = 3) => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            return await generator()
+          } catch (error) {
+            console.log(`❌ Tentativa ${attempt} falhou:`, error instanceof Error ? error.message : 'Erro desconhecido')
+            if (attempt === maxRetries) {
+              throw error
+            }
+            // Aguarda um pouco antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          }
+        }
+      }
+
+      // Gerar os materiais de estudo usando a IA com retry
       const [summaryResponse, quizResponse, flashcardsResponse] =
         await Promise.all([
-          aiService.generateSumario({
-            text: contentText,
+          generateWithRetry(() => aiService.generateSumario({
+            text: textForAI,
+            image: imageForAI,
+            pdfTextChunks: pdfChunksForAI,
             detalhamento: 'intermediario',
             temperatura: 0.7,
-          }),
-          aiService.generateQuiz({
-            text: contentText,
+          })),
+          generateWithRetry(() => aiService.generateQuiz({
+            text: textForAI,
+            image: imageForAI,
+            pdfTextChunks: pdfChunksForAI,
             quantidadeQuestoes: 5,
             temperatura: 0.7,
-          }),
-          aiService.generateFlashcards({
-            text: contentText,
+          })),
+          generateWithRetry(() => aiService.generateFlashcards({
+            text: textForAI,
+            image: imageForAI,
+            pdfTextChunks: pdfChunksForAI,
             quantidadeFlashcards: 5,
             temperatura: 0.7,
-          }),
+          })),
         ])
 
       console.log('✅ Materiais de IA gerados:', {
@@ -148,7 +195,16 @@ export class FileUploadService {
         },
       })
 
-      console.log('✅ StudyMaterial criado:', studyMaterial.id)
+
+      // Verificar se o material foi realmente criado
+      const createdMaterial = await prisma.studyMaterial.findUnique({
+        where: { id: studyMaterial.id },
+      })
+      
+      if (!createdMaterial) {
+        console.error('❌ StudyMaterial não encontrado após criação:', studyMaterial.id)
+        throw new Error('Erro: Material de estudo não foi criado corretamente')
+      }
 
       return {
         upload,
