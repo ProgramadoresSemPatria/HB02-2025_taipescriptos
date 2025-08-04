@@ -18,6 +18,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 type LoginFormInput = z.infer<typeof loginSchema>
 
@@ -49,9 +50,10 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
       await login(data)
 
       // Redireciona para a página principal após login bem-sucedido
+      toast.success('Bem vindo de volta ao Study Buddy!')
       navigate('/')
     } catch (error: any) {
-      setError(error.message || 'Erro ao fazer login')
+      toast.error(error.message || 'Erro ao fazer login. Tente novamente.')
     } finally {
       setIsLoading(false)
     }
