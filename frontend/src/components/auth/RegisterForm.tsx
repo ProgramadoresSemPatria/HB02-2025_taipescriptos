@@ -19,7 +19,6 @@ import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 
-
 type RegisterFormInput = z.infer<typeof registerSchema>
 
 const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
@@ -154,9 +153,10 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"
+                    disabled={isLoading}
                     className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
                   >
-                    Criar Conta
+                    {isLoading ? 'Criando conta...' : 'Criar Conta'}
                   </Button>
                 </div>
               </div>
@@ -165,17 +165,11 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <Link to="/login" className="underline underline-offset-4">
                   Faça login
                 </Link>
-              {error && (
-                <div className="text-sm text-red-500 text-center">{error}</div>
-              )}
-              <div className="flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full cursor-pointer text-primary-foreground dark:text-foreground"
-                >
-                  {isLoading ? 'Criando conta...' : 'Criar Conta'}
-                </Button>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
               </div>
             </form>
           </CardContent>
