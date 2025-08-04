@@ -81,6 +81,13 @@ export class StudyMaterialController {
         })
 
       const { id } = request.params as { id: string }
+      if (!id) {
+        return reply.status(400).send({
+          success: false,
+          message: 'ID do material de estudo não fornecido',
+          code: 'MISSING_ID',
+        })
+      }
 
       const material = await studyMaterialService.getStudyMaterialById(
         id,
