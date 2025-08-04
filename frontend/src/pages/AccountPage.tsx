@@ -1,9 +1,11 @@
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Lock, PencilLine, Trash, User, CreditCard, Crown } from 'lucide-react'
+import { User, CreditCard, Crown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import LogoutButton from '@/components/auth/LogoutButton'
+import { UpdateNameModal } from '@/components/UpdateNameModal'
+import { ResetPasswordModal } from '@/components/ResetPasswordModal'
+import { DeleteAccountModal } from '@/components/DeleteAccountModal'
 
 export function AccountPage() {
   const { user } = useAuth()
@@ -30,12 +32,7 @@ export function AccountPage() {
             <h2 className="text-xl font-bold">Seu nome</h2>
             <div className="flex gap-3 items-center">
               <p>{user.name}</p>
-              <Button>
-                <PencilLine className="text-primary-foreground dark:text-foreground" />
-                <span className="text-primary-foreground dark:text-foreground">
-                  Editar
-                </span>
-              </Button>
+              <UpdateNameModal />
             </div>
           </div>
           <Separator />
@@ -74,12 +71,14 @@ export function AccountPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Redefinir senha</h2>
             <div className="flex gap-3 items-center">
-              <Button>
-                <Lock className="text-primary-foreground dark:text-foreground" />
-                <span className="text-primary-foreground dark:text-foreground">
-                  Redefinir senha
-                </span>
-              </Button>
+              <ResetPasswordModal />
+            </div>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Deletar conta</h2>
+            <div className="flex gap-3 items-center">
+              <DeleteAccountModal />
             </div>
           </div>
           <Separator />
@@ -88,10 +87,11 @@ export function AccountPage() {
             <div className="flex gap-3 items-center">
               <LogoutButton
                 variant="destructive"
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="bg-destructive text-primary-foreground dark:text-foreground hover:bg-destructive/90"
               >
-                <Trash className="h-4 w-4" />
-                Sair
+                <span className="text-primary-foreground dark:text-foreground">
+                  Sair
+                </span>
               </LogoutButton>
             </div>
           </div>

@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth'
 const navMainData = [
   {
     title: 'Início',
-    url: '/',
+    url: '/dashboard',
     icon: <Home className="h-4 w-4" />,
   },
 ]

@@ -29,7 +29,7 @@ export class FileUploadService {
     userId: string,
     filename: string,
     contentText: string,
-    type: 'pdf' | 'docx' | 'txt' | 'raw' | 'image',
+    type: FileType,
   ) {
     const upload = await prisma.fileUpload.create({
       data: {
