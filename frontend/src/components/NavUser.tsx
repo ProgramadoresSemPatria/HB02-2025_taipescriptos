@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 export function NavUser({
   user,
@@ -32,6 +33,7 @@ export function NavUser({
 
   const handleLogout = () => {
     logout()
+    toast.success('Até a próxima!')
     navigate('/login')
   }
 
