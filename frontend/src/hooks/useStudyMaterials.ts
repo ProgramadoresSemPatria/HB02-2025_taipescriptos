@@ -7,6 +7,7 @@ import {
   StudyMaterialDetailed,
   ApiException,
 } from '../services/aiServices'
+import { useAuth } from './useAuth'
 
 interface UseStudyMaterialsReturn {
   materials: StudyMaterial[]
@@ -27,6 +28,7 @@ export function useStudyMaterials(
   initialPage: number = 1,
   initialLimit: number = 20,
 ): UseStudyMaterialsReturn {
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [materials, setMaterials] = useState<StudyMaterial[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,10 +40,7 @@ export function useStudyMaterials(
   })
 
   const loadMaterials = useCallback(
-    async (
-      page: number = pagination.page,
-      limit: number = pagination.limit,
-    ) => {
+    async (page: number = 1, limit: number = 20) => {
       try {
         setLoading(true)
         setError(null)
@@ -61,7 +60,7 @@ export function useStudyMaterials(
         setLoading(false)
       }
     },
-    [pagination.page, pagination.limit],
+    [],
   )
 
   const deleteMaterial = useCallback(
@@ -95,8 +94,38 @@ export function useStudyMaterials(
   }, [loadMaterials])
 
   useEffect(() => {
-    loadMaterials()
-  }, [loadMaterials]) // Dependência necessária para o hook
+    // Só carregar materiais se o usuário estiver autenticado e não estiver carregando
+    if (!authLoading && isAuthenticated) {
+      // Chamada direta para evitar dependência circular
+      const loadInitialMaterials = async () => {
+        try {
+          setLoading(true)
+          setError(null)
+
+          const response = await getStudyMaterials(initialPage, initialLimit)
+
+          setMaterials(response.data)
+          setPagination(response.pagination)
+        } catch (err) {
+          if (err instanceof ApiException) {
+            setError(err.message)
+          } else {
+            setError('Erro ao carregar materiais de estudo')
+          }
+          console.error('Erro ao carregar materiais:', err)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      loadInitialMaterials()
+    } else if (!authLoading && !isAuthenticated) {
+      // Se não estiver autenticado, limpar estado
+      setMaterials([])
+      setLoading(false)
+      setError(null)
+    }
+  }, [authLoading, isAuthenticated, initialPage, initialLimit]) // Dependências específicas
 
   return {
     materials,

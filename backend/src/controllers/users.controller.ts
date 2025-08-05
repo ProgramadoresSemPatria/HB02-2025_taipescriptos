@@ -83,12 +83,17 @@ export class UsersController {
       // Validação dos dados
       const { name, email, password } = createUserSchema.parse(request.body)
 
-      // Registrar usuário
-      const user = await usersService.register({ name, email, password })
+      // Registrar usuário e gerar token
+      const authResponse = await usersService.registerWithToken({
+        name,
+        email,
+        password,
+      })
 
       return reply.code(201).send({
         message: 'Usuário registrado com sucesso',
-        user,
+        token: authResponse.token,
+        user: authResponse.user,
       })
     } catch (error) {
       if (error instanceof UserAlreadyExistsError) {

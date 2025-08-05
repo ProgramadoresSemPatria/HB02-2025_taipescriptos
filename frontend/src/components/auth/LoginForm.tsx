@@ -50,8 +50,9 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
       await login(data)
 
       // Redireciona para a página principal após login bem-sucedido
+
+      navigate('/dashboard')
       toast.success('Bem vindo de volta ao Study Buddy!')
-      navigate('/')
     } catch (error: any) {
       toast.error(error.message || 'Erro ao fazer login. Tente novamente.')
     } finally {

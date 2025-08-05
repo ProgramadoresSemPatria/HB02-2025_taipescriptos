@@ -50,8 +50,10 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
 
       await register(data)
 
+      // Redireciona para o dashboard após registro bem-sucedido
+      navigate('/dashboard')
       toast.success('Conta criada com sucesso, bem vindo(a) ao Study Buddy!')
-      navigate('/')
+  
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
     } finally {
