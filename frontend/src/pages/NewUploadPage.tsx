@@ -37,6 +37,7 @@ import {
 import { motion } from 'framer-motion'
 import { FileText, Brain, BookOpen, Upload, Type } from 'lucide-react'
 import { toast } from 'sonner'
+import { OnStudySuccess } from '@/components/OnStudySuccess'
 
 const NewUploadPage = () => {
   const navigate = useNavigate()
@@ -54,6 +55,7 @@ const NewUploadPage = () => {
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [inputMode, setInputMode] = useState<'file' | 'text'>('file')
   const [selectedFiles, setSelectedFiles] = useState<File[] | undefined>()
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null
@@ -212,7 +214,7 @@ const NewUploadPage = () => {
           '🔄 Redirecionando para:',
           `/dashboard/study/${studyMaterialId}`,
         )
-        navigate(`/dashboard/study/${studyMaterialId}`)
+        setIsSuccessDialogOpen(true)
       }, 3000)
 
       // Limpar campos após sucesso
@@ -223,6 +225,7 @@ const NewUploadPage = () => {
         setMessage('')
       }
     } catch (error) {
+      setIsSuccessDialogOpen(true)
       console.error('Erro ao processar:', error)
 
       if (error instanceof ApiException) {
@@ -236,6 +239,7 @@ const NewUploadPage = () => {
         toast.error('Erro desconhecido ao processar')
       }
     } finally {
+      setIsSuccessDialogOpen(true)
       setIsLoading(false)
       setProcessingStep('')
     }
@@ -290,6 +294,13 @@ const NewUploadPage = () => {
     >
       <div className="flex min-h-full justify-center p-4">
         <div className="flex flex-col justify-center gap-12 p-6 max-w-4xl w-full">
+          {isSuccessDialogOpen && (
+            <OnStudySuccess
+              isSuccessDialogOpen={isSuccessDialogOpen}
+              setIsSuccessDialogOpen={setIsSuccessDialogOpen}
+            />
+          )}
+
           <div>
             <div className="text-center gap-2 flex flex-col">
               <h1 className="text-3xl font-bold tracking-tight">
@@ -418,15 +429,6 @@ const NewUploadPage = () => {
                     />
                   </AIInput>
                 </div>
-              )}
-
-              {/* Mensagem de erro */}
-              {error && (
-                <Card className="border-red-200">
-                  <CardContent className="p-4">
-                    <p className="text-sm text-red-600">{error}</p>
-                  </CardContent>
-                </Card>
               )}
 
               {/* Botão de envio */}
