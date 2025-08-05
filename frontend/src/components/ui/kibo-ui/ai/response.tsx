@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   type BundledLanguage,
@@ -16,20 +16,20 @@ import {
   CodeBlockSelectItem,
   CodeBlockSelectTrigger,
   CodeBlockSelectValue,
-} from '@repo/code-block';
-import type { HTMLAttributes } from 'react';
-import { memo } from 'react';
-import ReactMarkdown, { type Options } from 'react-markdown';
-import rehypeKatex from 'rehype-katex';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import { cn } from '@/lib/utils';
-import 'katex/dist/katex.min.css';
+} from '@/components/ui/kibo-ui/code-block'
+import type { HTMLAttributes } from 'react'
+import { memo } from 'react'
+import ReactMarkdown, { type Options } from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import { cn } from '@/lib/utils'
+import 'katex/dist/katex.min.css'
 
 export type AIResponseProps = HTMLAttributes<HTMLDivElement> & {
-  options?: Options;
-  children: Options['children'];
-};
+  options?: Options
+  children: Options['children']
+}
 
 const components: Options['components'] = {
   ol: ({ node, children, className, ...props }) => (
@@ -102,20 +102,20 @@ const components: Options['components'] = {
     </h6>
   ),
   pre: ({ node, className, children }) => {
-    let language = 'javascript';
+    let language = 'javascript'
 
     if (typeof node?.properties?.className === 'string') {
-      language = node.properties.className.replace('language-', '');
+      language = node.properties.className.replace('language-', '')
     }
 
     const childrenIsCode =
       typeof children === 'object' &&
       children !== null &&
       'type' in children &&
-      children.type === 'code';
+      children.type === 'code'
 
     if (!childrenIsCode) {
-      return <pre>{children}</pre>;
+      return <pre>{children}</pre>
     }
 
     const data: CodeBlockProps['data'] = [
@@ -124,7 +124,7 @@ const components: Options['components'] = {
         filename: 'index.js',
         code: (children.props as { children: string }).children,
       },
-    ];
+    ]
 
     return (
       <CodeBlock
@@ -134,7 +134,7 @@ const components: Options['components'] = {
       >
         <CodeBlockHeader>
           <CodeBlockFiles>
-            {(item) => (
+            {(item: CodeBlockProps['data'][0]) => (
               <CodeBlockFilename key={item.language} value={item.language}>
                 {item.filename}
               </CodeBlockFilename>
@@ -145,7 +145,7 @@ const components: Options['components'] = {
               <CodeBlockSelectValue />
             </CodeBlockSelectTrigger>
             <CodeBlockSelectContent>
-              {(item) => (
+              {(item: CodeBlockProps['data'][0]) => (
                 <CodeBlockSelectItem key={item.language} value={item.language}>
                   {item.language}
                 </CodeBlockSelectItem>
@@ -158,7 +158,7 @@ const components: Options['components'] = {
           />
         </CodeBlockHeader>
         <CodeBlockBody>
-          {(item) => (
+          {(item: CodeBlockProps['data'][0]) => (
             <CodeBlockItem key={item.language} value={item.language}>
               <CodeBlockContent language={item.language as BundledLanguage}>
                 {item.code}
@@ -167,16 +167,16 @@ const components: Options['components'] = {
           )}
         </CodeBlockBody>
       </CodeBlock>
-    );
+    )
   },
-};
+}
 
 export const AIResponse = memo(
   ({ className, options, children, ...props }: AIResponseProps) => (
     <div
       className={cn(
         'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
-        className
+        className,
       )}
       {...props}
     >
@@ -190,5 +190,5 @@ export const AIResponse = memo(
       </ReactMarkdown>
     </div>
   ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children
-);
+  (prevProps, nextProps) => prevProps.children === nextProps.children,
+)

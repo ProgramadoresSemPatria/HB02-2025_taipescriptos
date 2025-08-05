@@ -31,7 +31,6 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<LoginFormInput>({
     resolver: zodResolver(loginSchema),

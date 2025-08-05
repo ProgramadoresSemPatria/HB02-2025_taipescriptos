@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import { HomeIcon, X } from 'lucide-react'
+import { HomeIcon } from 'lucide-react'
 
 interface OnStudySuccessProps {
   isSuccessDialogOpen: boolean
@@ -19,10 +19,6 @@ export function OnStudySuccess({
   setIsSuccessDialogOpen,
 }: OnStudySuccessProps) {
   const navigate = useNavigate()
-
-  const handleClose = () => {
-    setIsSuccessDialogOpen(false)
-  }
 
   return (
     <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
