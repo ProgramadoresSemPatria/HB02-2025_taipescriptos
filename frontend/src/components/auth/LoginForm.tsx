@@ -49,7 +49,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
       await login(data)
 
       // Redireciona para a página principal após login bem-sucedido
-      navigate('/')
+      navigate('/dashboard')
     } catch (error: any) {
       setError(error.message || 'Erro ao fazer login')
     } finally {

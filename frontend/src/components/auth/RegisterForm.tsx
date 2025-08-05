@@ -49,8 +49,8 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
 
       await register(data)
 
-      // Redireciona para a página principal após registro bem-sucedido
-      navigate('/')
+      // Redireciona para o dashboard após registro bem-sucedido
+      navigate('/dashboard')
     } catch (error: any) {
       setError(error.message || 'Erro ao criar conta')
     } finally {
