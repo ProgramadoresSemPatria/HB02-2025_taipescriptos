@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  api-career:
+    image: bitnami/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=taipescriptos
+      - POSTGRES_PASSWORD=base
+      - POSTGRES_DB=studybuddy
+    volumes:
+      - postgres_data:/bitnami/postgresql
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
