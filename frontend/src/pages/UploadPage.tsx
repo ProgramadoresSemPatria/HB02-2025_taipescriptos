@@ -1,8 +1,17 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from '@/components/ui/kibo-ui/dropzone'
+import { AIInput, AIInputTextarea } from '@/components/ui/kibo-ui/ai/input'
 import {
   detectFileType,
   processFile,
@@ -11,37 +20,28 @@ import {
 import {
   createUploadWithStudyMaterial,
   createFileUploadWithStudyMaterial,
-  type QuizResponse,
-  type FlashcardsResponse,
-  type SumarioResponse,
   ApiException,
 } from '@/services/aiServices'
+import { motion } from 'framer-motion'
+import { FileText, Brain, BookOpen, Upload, Type } from 'lucide-react'
+import { toast } from 'sonner'
+import { OnStudySuccess } from '@/components/OnStudySuccess'
 
 const UploadPage = () => {
-  const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
-  const [results, setResults] = useState<{
-    quiz?: QuizResponse
-    flashcards?: FlashcardsResponse
-    sumario?: SumarioResponse
-  } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [processedChunks, setProcessedChunks] = useState<string[] | null>(null)
-  const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [inputMode, setInputMode] = useState<'file' | 'text'>('file')
+  const [selectedFiles, setSelectedFiles] = useState<File[] | undefined>()
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] || null
-    setSelectedFile(file)
-    setResults(null)
-    setError(null)
-    setProcessedChunks(null)
-    setProcessedImage(null)
-    if (file) {
-      const fileInfo = detectFileType(file)
+  const handleDrop = (files: File[]) => {
+    console.log(files)
+    setSelectedFiles(files)
+    if (files.length > 0) {
+      setSelectedFile(files[0])
+      const fileInfo = detectFileType(files[0])
       console.log('Arquivo detectado:', fileInfo)
       setMessage('') // Limpa texto quando arquivo é selecionado
     }
@@ -50,30 +50,20 @@ const UploadPage = () => {
   const handleModeChange = (mode: 'file' | 'text') => {
     setInputMode(mode)
     setSelectedFile(null)
+    setSelectedFiles(undefined)
     setMessage('')
-    setResults(null)
-    setError(null)
-    setProcessedChunks(null)
-    setProcessedImage(null)
-    // Limpa o input de arquivo
-    const fileInput = document.getElementById('file-input') as HTMLInputElement
-    if (fileInput) fileInput.value = ''
   }
 
   const handleSubmit = async () => {
     // Validação: apenas texto OU arquivo
     if (inputMode === 'file' && !selectedFile) {
-      setError('Por favor, selecione um arquivo')
       return
     }
     if (inputMode === 'text' && !message.trim()) {
-      setError('Por favor, digite um texto')
       return
     }
 
     setIsLoading(true)
-    setError(null)
-    setResults(null)
 
     try {
       let filename: string
@@ -97,13 +87,7 @@ const UploadPage = () => {
           'Analise o conteúdo fornecido',
         )
 
-        // Atualizar estado para exibir no frontend
-        if (processedFile.pdfTextChunks) {
-          setProcessedChunks(processedFile.pdfTextChunks)
-        }
-        if (processedFile.image) {
-          setProcessedImage(processedFile.image)
-        }
+        // Processar arquivo baseado no tipo
 
         filename = selectedFile.name
         contentText = processedFile.text
@@ -142,44 +126,58 @@ const UploadPage = () => {
         })
       }
 
-      // Exibir os resultados gerados
-      setResults({
-        quiz: response.data.content.quiz,
-        flashcards: response.data.content.flashcards,
-        sumario: response.data.content.summary,
-      })
+      // Processar resposta
 
       setProcessingStep('')
 
-      // Mostrar mensagem de sucesso e redirecionar após 2 segundos
+      // Verificar se o ID do studyMaterial está disponível
+      const studyMaterialId = response.data.studyMaterial?.id
+      if (!studyMaterialId) {
+        console.error(
+          'ID do StudyMaterial não encontrado na resposta:',
+          response.data,
+        )
+        return
+      }
+
+      console.log('✅ Material de estudo criado com ID:', studyMaterialId)
+
+      // Mostrar mensagem de sucesso e redirecionar após 3 segundos
       setProcessingStep(
-        '✅ Material de estudo criado com sucesso! Redirecionando...',
+        'Material de estudo criado com sucesso! Redirecionando...',
       )
+
+      toast.success('Material de estudo criado com sucesso! Redirecionando...')
+
       setTimeout(() => {
-        navigate('/dashboard/study')
-      }, 2000)
+        // Redirecionar para o estudo específico usando o ID
+        console.log(
+          '🔄 Redirecionando para:',
+          `/dashboard/study/${studyMaterialId}`,
+        )
+        setIsSuccessDialogOpen(true)
+      }, 3000)
 
       // Limpar campos após sucesso
       if (inputMode === 'file') {
         setSelectedFile(null)
-        const fileInput = document.getElementById(
-          'file-input',
-        ) as HTMLInputElement
-        if (fileInput) fileInput.value = ''
+        setSelectedFiles(undefined)
       } else {
         setMessage('')
       }
     } catch (error) {
+      setIsSuccessDialogOpen(true)
       console.error('Erro ao processar:', error)
 
       if (error instanceof ApiException) {
-        setError(`Erro da API: ${error.apiError.message}`)
+        toast.error(`Erro da API: ${error.apiError.message}`)
       } else if (error instanceof Error) {
-        setError(error.message)
+        toast.error(error.message)
       } else {
-        setError('Erro desconhecido ao processar')
+        toast.error('Erro desconhecido ao processar')
       }
     } finally {
+      setIsSuccessDialogOpen(true)
       setIsLoading(false)
       setProcessingStep('')
     }
@@ -189,367 +187,213 @@ const UploadPage = () => {
     return 'Imagens (JPG, PNG, GIF, WebP), PDFs, arquivos de texto (TXT, MD)'
   }
 
+  const inputModes = [
+    {
+      mode: 'file' as const,
+      label: 'Enviar Arquivo',
+      icon: Upload,
+      description: 'Anexe um arquivo para processar',
+    },
+    {
+      mode: 'text' as const,
+      label: 'Digite Texto',
+      icon: Type,
+      description: 'Digite o conteúdo diretamente',
+    },
+  ]
+
+  const studyTypes = [
+    {
+      type: 'quiz',
+      label: 'Quiz',
+      icon: Brain,
+      description: 'Questões de múltipla escolha',
+    },
+    {
+      type: 'flashcards',
+      label: 'Flashcards',
+      icon: BookOpen,
+      description: 'Cartões para memorização',
+    },
+    {
+      type: 'sumario',
+      label: 'Sumário',
+      icon: FileText,
+      description: 'Resumo estruturado',
+    },
+  ]
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Card principal */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              🚀 IA Multimodal - Studdy Buddy
-            </CardTitle>
-            <p className="text-center text-gray-600">
-              Gere quiz, flashcards e resumos através de arquivos ou texto
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Seletor de modo */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                📝 Modo de entrada
-              </label>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleModeChange('file')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    inputMode === 'file'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  📁 Enviar Arquivo
-                </button>
-                <button
-                  onClick={() => handleModeChange('text')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    inputMode === 'text'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  ✏️ Digite Texto
-                </button>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex min-h-full justify-center p-4">
+        <div className="flex flex-col justify-center gap-12 p-6 max-w-4xl w-full">
+          {isSuccessDialogOpen && (
+            <OnStudySuccess
+              isSuccessDialogOpen={isSuccessDialogOpen}
+              setIsSuccessDialogOpen={setIsSuccessDialogOpen}
+            />
+          )}
+
+          <div>
+            <div className="text-center gap-2 flex flex-col">
+              <h1 className="text-3xl font-bold tracking-tight">
+                IA Multimodal - Studdy Buddy
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Gere quiz, flashcards e resumos através de arquivos ou texto
+              </p>
+
+              {/* Seletor de modo */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3">
+                  Modo de entrada
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {inputModes.map(
+                    ({ mode, label, icon: Icon, description }) => (
+                      <Card
+                        key={mode}
+                        className={`flex justify-center items-center flex-col h-auto p-4 gap-3 cursor-pointer transition-colors ${
+                          inputMode === mode ? 'border-primary' : ''
+                        }`}
+                        onClick={() => handleModeChange(mode)}
+                      >
+                        <Icon size={24} />
+                        <div className="text-center">
+                          <div className="font-semibold text-sm sm:text-base">
+                            {label}
+                          </div>
+                          <div className="text-sm sm:text-xs opacity-70">
+                            {description}
+                          </div>
+                        </div>
+                      </Card>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Tipos de estudo */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-3">
+                  Tipos de Material
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {studyTypes.map(
+                    ({ type, label, icon: Icon, description }) => (
+                      <Card
+                        key={type}
+                        className="flex justify-center items-center flex-col h-auto p-4 gap-3"
+                      >
+                        <Icon size={24} />
+                        <div className="text-center">
+                          <div className="font-semibold text-sm sm:text-base">
+                            {label}
+                          </div>
+                          <div className="text-sm sm:text-xs opacity-70">
+                            {description}
+                          </div>
+                        </div>
+                      </Card>
+                    ),
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Input de arquivo (apenas se modo = file) */}
-            {inputMode === 'file' && (
-              <div>
-                <label
-                  htmlFor="file-input"
-                  className="block text-sm font-medium mb-2"
-                >
-                  📁 Selecionar arquivo
-                </label>
-                <Input
-                  id="file-input"
-                  type="file"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                  accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Formatos suportados: {getSupportedFormats()}
-                </p>
-                {selectedFile && (
-                  <div className="mt-2 p-2 bg-blue-50 rounded border">
-                    <p className="text-sm text-blue-800">
-                      ✅ <strong>{selectedFile.name}</strong>
-                    </p>
-                    <p className="text-xs text-blue-600">
-                      Tipo: {detectFileType(selectedFile).type} | Tamanho:{' '}
-                      {(selectedFile.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Campo de texto (apenas se modo = text) */}
-            {inputMode === 'text' && (
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium mb-2"
-                >
-                  ✏️ Digite seu texto
-                </label>
-                <textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Digite o texto que você quer usar para gerar quiz, flashcards e resumo..."
-                  className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            )}
-
-            {/* Status de processamento */}
-            {processingStep && (
-              <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
-                <p className="text-sm text-yellow-800">⏳ {processingStep}</p>
-              </div>
-            )}
-
-            {/* Mensagem de sucesso */}
-            {results && (
-              <div className="p-4 bg-green-50 rounded border border-green-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <p className="text-sm text-green-800">
-                    ✅ Material de estudo criado com sucesso!
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      window.location.href = '/dashboard/study'
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    📚 Ver Material de Estudo
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setResults(null)
-                      setSelectedFile(null)
-                      setMessage('')
-                      setError(null)
-                    }}
-                  >
-                    ➕ Criar Novo Material
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Mensagem de erro */}
-            {error && (
-              <div className="p-3 bg-red-50 rounded border border-red-200">
-                <p className="text-sm text-red-800">❌ {error}</p>
-              </div>
-            )}
-
-            {/* Botão de envio */}
-            <Button
-              onClick={handleSubmit}
-              disabled={
-                isLoading ||
-                (inputMode === 'file' && !selectedFile) ||
-                (inputMode === 'text' && !message.trim())
-              }
-              className="w-full h-12 text-lg"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  ⏳ {processingStep || 'Processando...'}
-                </span>
-              ) : (
-                '🚀 Gerar Material de Estudo'
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Card de preview dos chunks processados */}
-        {(processedChunks || processedImage) && (
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-lg text-blue-700">
-                🔍 Preview do Processamento
-              </CardTitle>
-              <p className="text-sm text-gray-500">
-                Visualize como o arquivo foi processado antes do envio
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Preview da imagem processada */}
-              {processedImage && (
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">
-                    📷 Imagem Processada:
-                  </h4>
-                  <div className="bg-gray-50 p-3 rounded border">
-                    <img
-                      src={processedImage}
-                      alt="Imagem processada"
-                      className="max-w-xs max-h-48 object-contain rounded border"
-                    />
-                    <p className="text-xs text-gray-600 mt-1">
-                      Redimensionada e convertida para Base64
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Preview dos chunks de texto */}
-              {processedChunks && processedChunks.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">
-                    📄 Chunks de Texto Extraídos: ({processedChunks.length})
-                  </h4>
-                  {processedChunks.length === 50 && (
-                    <div className="mb-2 p-2 bg-yellow-50 rounded border border-yellow-200">
-                      <p className="text-xs text-yellow-700">
-                        ⚠️ PDF muito grande! Limitado aos primeiros 50 chunks
-                        para processamento otimizado.
-                      </p>
-                    </div>
-                  )}
-                  <div className="space-y-2 max-h-80 overflow-y-auto">
-                    {processedChunks.map((chunk, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 p-3 rounded border"
-                      >
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-semibold text-blue-600">
-                            Chunk {index + 1}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {chunk.length} caracteres
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-700 max-h-24 overflow-y-auto">
-                          {chunk.length > 200 ? (
-                            <>
-                              {chunk.substring(0, 200)}
-                              <span className="text-blue-500">
-                                ... (truncado)
-                              </span>
-                            </>
-                          ) : (
-                            chunk
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Cards de resultados */}
-        {results && (
-          <div className="space-y-6">
-            {/* Sumário */}
-            {results.sumario && (
-              <Card className="w-full">
-                <CardHeader>
-                  <CardTitle className="text-lg text-blue-700">
-                    📄 Resumo
-                  </CardTitle>
-                  <p className="text-sm text-gray-500">
-                    Modelo: {results.sumario.modelo} | Gerado em:{' '}
-                    {new Date(results.sumario.timestamp).toLocaleString(
-                      'pt-BR',
-                    )}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <div className="whitespace-pre-wrap text-gray-800 bg-gray-50 p-4 rounded border">
-                      {results.sumario.resumoExecutivo}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Quiz */}
-            {results.quiz && (
-              <Card className="w-full">
-                <CardHeader>
-                  <CardTitle className="text-lg text-green-700">
-                    🧠 Quiz ({results.quiz.questoes.length} questões)
-                  </CardTitle>
-                  <p className="text-sm text-gray-500">
-                    Modelo: {results.quiz.modelo} | Gerado em:{' '}
-                    {new Date(results.quiz.timestamp).toLocaleString('pt-BR')}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {results.quiz.questoes.map((questao, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 p-4 rounded border"
-                      >
-                        <h4 className="font-semibold mb-2">
-                          {index + 1}. {questao.pergunta}
-                        </h4>
-                        <div className="space-y-1">
-                          {questao.opcoes.map((opcao, opcaoIndex) => (
-                            <div
-                              key={opcaoIndex}
-                              className={`p-2 rounded text-sm ${
-                                opcaoIndex === questao.respostaCorreta
-                                  ? 'bg-green-100 text-green-800 font-medium'
-                                  : 'bg-white'
-                              }`}
-                            >
-                              {String.fromCharCode(65 + opcaoIndex)}) {opcao}
-                              {opcaoIndex === questao.respostaCorreta && ' ✅'}
-                            </div>
-                          ))}
-                        </div>
-                        {questao.explicacao && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-800">
-                            <strong>Explicação:</strong> {questao.explicacao}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Flashcards */}
-            {results.flashcards && (
-              <Card className="w-full">
-                <CardHeader>
-                  <CardTitle className="text-lg text-purple-700">
-                    🃏 Flashcards ({results.flashcards.flashcards.length} cards)
-                  </CardTitle>
-                  <p className="text-sm text-gray-500">
-                    Modelo: {results.flashcards.modelo} | Gerado em:{' '}
-                    {new Date(results.flashcards.timestamp).toLocaleString(
-                      'pt-BR',
-                    )}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {results.flashcards.flashcards.map((card, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 p-4 rounded border"
-                      >
-                        <div className="bg-purple-100 p-3 rounded mb-2">
-                          <h4 className="font-semibold text-purple-800">
-                            Pergunta {index + 1}:
-                          </h4>
-                          <p className="text-purple-700">{card.frente}</p>
-                        </div>
-                        <div className="bg-purple-50 p-3 rounded">
-                          <h4 className="font-semibold text-purple-800">
-                            Resposta:
-                          </h4>
-                          <p className="text-purple-700">{card.verso}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
-        )}
+
+          <div>
+            <div className="flex justify-center items-center flex-col gap-4">
+              {/* Input de arquivo (apenas se modo = file) */}
+              {inputMode === 'file' && (
+                <div className="w-full">
+                  <Dropzone
+                    accept={{
+                      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+                      'application/pdf': ['.pdf'],
+                      'text/*': ['.txt', '.md'],
+                    }}
+                    maxFiles={1}
+                    maxSize={1024 * 1024 * 10}
+                    minSize={1024}
+                    onDrop={handleDrop}
+                    onError={console.error}
+                    src={selectedFiles}
+                  >
+                    <DropzoneEmptyState />
+                    <DropzoneContent />
+                  </Dropzone>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Formatos suportados: {getSupportedFormats()}
+                  </p>
+                  {selectedFile && (
+                    <Card className="mt-4">
+                      <CardHeader>
+                        <CardTitle>
+                          <p className="text-sm font-semiboldtext-muted-foreground">
+                            {selectedFile.name}
+                          </p>
+                        </CardTitle>
+                        <CardDescription>
+                          <p className="text-sm text-muted-foreground">
+                            Tipo: {detectFileType(selectedFile).type} | Tamanho:{' '}
+                            {(selectedFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  )}
+                </div>
+              )}
+
+              {/* Campo de texto (apenas se modo = text) */}
+              {inputMode === 'text' && (
+                <div className="w-full">
+                  <label className="block text-sm font-medium mb-2">
+                    Digite seu texto
+                  </label>
+                  <AIInput>
+                    <AIInputTextarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Digite o texto que você quer usar para gerar quiz, flashcards e resumo..."
+                      disabled={isLoading}
+                      className="min-h-[120px]"
+                    />
+                  </AIInput>
+                </div>
+              )}
+
+              {/* Botão de envio */}
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  isLoading ||
+                  (inputMode === 'file' && !selectedFile) ||
+                  (inputMode === 'text' && !message.trim())
+                }
+                className="w-full h-12 text-lg"
+              >
+                {isLoading ? (
+                  <span className="flex items-center text-primary-foreground dark:text-foreground justify-center gap-2">
+                    {processingStep || 'Processando...'}
+                  </span>
+                ) : (
+                  <span className="text-primary-foreground dark:text-foreground">
+                    Gerar Material de Estudo
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

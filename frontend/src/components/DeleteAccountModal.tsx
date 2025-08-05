@@ -35,7 +35,7 @@ export function DeleteAccountModal() {
     resolver: zodResolver(deleteAccountSchema),
   })
 
-  const onSubmit = async (data: DeleteAccountFormData) => {
+  const onSubmit = async () => {
     try {
       const userString = localStorage.getItem('user')
       if (!userString) {
@@ -58,7 +58,7 @@ export function DeleteAccountModal() {
       logout()
       setOpen(false)
       reset()
-    } catch (error) {
+    } catch {
       reset()
       toast.error('Erro ao deletar conta. Tente novamente.')
     }

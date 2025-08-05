@@ -31,7 +31,6 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<RegisterFormInput>({
     resolver: zodResolver(registerSchema),

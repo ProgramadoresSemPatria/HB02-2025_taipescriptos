@@ -91,7 +91,7 @@ export function HomePage() {
                 variant="default"
                 size="lg"
                 className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary-glow text-primary-foreground dark:text-foreground hover:scale-[1.03] transition-all cursor-pointer min-w-8 duration-200 ease-linear"
-                onClick={() => navigate('/dashboard/uploadpage')}
+                onClick={() => navigate('/dashboard/upload')}
               >
                 <Plus className="w-5 h-5" />
                 Novo Estudo
@@ -127,7 +127,7 @@ export function HomePage() {
                   : 'Comece criando seu primeiro material de estudo!'}
               </p>
               <Button
-                onClick={() => navigate('/dashboard/uploadpage')}
+                onClick={() => navigate('/dashboard/upload')}
                 className="gap-2 text-primary-foreground dark:text-foreground"
               >
                 <Plus className="w-4 h-4" />
