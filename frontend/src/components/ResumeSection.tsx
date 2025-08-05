@@ -121,7 +121,7 @@ export function ResumoSection({ summary }: ResumoSectionProps) {
         <Card className="p-6 bg-accent/5 border-accent/20">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-5 h-5 text-primary-foreground dark:text-foreground" />
+              <Lightbulb className="w-5 h-5 text-foreground" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg text-foreground mb-3">
@@ -137,14 +137,12 @@ export function ResumoSection({ summary }: ResumoSectionProps) {
 
       <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 flex items-center gap-3">
         <div className="w-8 h-8 bg-accent/20 rounded-full flex items-center justify-center">
-          <Lightbulb className="w-4 h-4 text-primary-foreground dark:text-foreground" />
+          <Lightbulb className="w-4 h-4 text-foreground" />
         </div>
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-primary-foreground dark:text-foreground">
-              Dica de estudo:
-            </strong>{' '}
-            Use este resumo como base e depois teste seus conhecimentos no quiz!
+            <strong className="text-foreground">Dica de estudo:</strong> Use
+            este resumo como base e depois teste seus conhecimentos no quiz!
           </p>
         </div>
       </div>
