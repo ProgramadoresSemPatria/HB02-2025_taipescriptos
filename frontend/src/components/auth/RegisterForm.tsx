@@ -18,6 +18,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 type RegisterFormInput = z.infer<typeof registerSchema>
 
@@ -51,8 +52,10 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
 
       // Redireciona para o dashboard após registro bem-sucedido
       navigate('/dashboard')
+      toast.success('Conta criada com sucesso, bem vindo(a) ao Study Buddy!')
+  
     } catch (error: any) {
-      setError(error.message || 'Erro ao criar conta')
+      toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
     } finally {
       setIsLoading(false)
     }
@@ -150,6 +153,11 @@ const RegisterForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     </p>
                   )}
                 </div>
+                {error && (
+                  <div className="text-sm text-red-500 text-center">
+                    {error}
+                  </div>
+                )}
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"

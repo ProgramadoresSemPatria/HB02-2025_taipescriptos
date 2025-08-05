@@ -149,8 +149,10 @@ export function QuizSection({ quiz }: QuizSectionProps) {
                 : 'Continue estudando! O resumo pode ajudar.'}
           </p>
           <Button variant="default" onClick={reiniciarQuiz} className="gap-2">
-            <RotateCcw className="w-4 h-4" />
-            Tentar Novamente
+            <RotateCcw className="w-4 h-4 text-primary-foreground dark:text-foreground" />
+            <span className="text-primary-foreground dark:text-foreground">
+              Tentar Novamente
+            </span>
           </Button>
         </Card>
       </section>
@@ -180,9 +182,9 @@ export function QuizSection({ quiz }: QuizSectionProps) {
             Pergunta {perguntaAtual + 1} de {perguntas.length}
           </span>
         </div>
-        <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+        <div className="w-32 h-2 bg-muted-foreground/40 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-primary transition-all duration-500"
+            className="h-full bg-primary dark:bg-primary transition-all duration-500"
             style={{
               width: `${((perguntaAtual + 1) / perguntas.length) * 100}%`,
             }}
@@ -276,7 +278,7 @@ export function QuizSection({ quiz }: QuizSectionProps) {
           <Button
             onClick={proximaPergunta}
             variant="default"
-            className="w-full"
+            className="w-full text-primary-foreground dark:text-foreground"
           >
             {perguntaAtual < perguntas.length - 1
               ? 'Próxima Pergunta'

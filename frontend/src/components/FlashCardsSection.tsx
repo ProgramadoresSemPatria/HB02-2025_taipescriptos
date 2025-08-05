@@ -125,14 +125,14 @@ export function FlashcardsSection({
       {/* Progresso */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Lightbulb className="w-5 h-5 text-accent" />
+          <Lightbulb className="w-5 h-5 text-primary-foreground dark:text-foreground" />
           <span className="text-sm text-muted-foreground">
             Progresso: {cardsEstudados.size}/{flashcards.length} cards estudados
           </span>
         </div>
-        <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+        <div className="w-32 h-2 bg-muted-foreground/40 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-hero transition-all duration-500"
+            className="h-full bg-primary dark:bg-primary transition-all duration-500"
             style={{ width: `${progresso}%` }}
           />
         </div>
@@ -161,14 +161,14 @@ export function FlashcardsSection({
               style={{ backfaceVisibility: 'hidden' }}
             >
               <div className="mb-4">
-                <span className="text-xs px-3 py-1 bg-primary-foreground/20 rounded-full">
+                <span className="text-xs text-foreground dark:text-foreground px-3 py-1 bg-primary-foreground/20 rounded-full">
                   {card.categoria}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold mb-4 text-black">
+              <h3 className="text-lg font-semibold mb-4 text-foreground dark:text-foreground">
                 {card.frente}
               </h3>
-              <p className="text-sm opacity-80 text-black">
+              <p className="text-sm opacity-80 text-foreground dark:text-foreground">
                 Clique para ver a resposta
               </p>
             </div>
